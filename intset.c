@@ -12,6 +12,8 @@
 #include "fmgr.h"
 #include "libpq/pqformat.h"        /* needed for send/recv functions */
 
+#include "stringutils.h"
+
 PG_MODULE_MAGIC;
 
 typedef struct Complex {
@@ -32,10 +34,6 @@ typedef struct IntSet {
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(intset_in);
-int validateIntSetRawValue(char* rawValue);
-int getIntSetSize(char* rawValue);
-int* getUniqueItems(char* rawValue);
-
 Datum intset_in(PG_FUNCTION_ARGS) {
     char *str = PG_GETARG_CSTRING(0);
     IntSetPrt result;
@@ -49,19 +47,23 @@ Datum intset_in(PG_FUNCTION_ARGS) {
 						str)));
     }
 
-    size = getIntSetSize(str);
-    result = (IntSetPrt) palloc(sizeof(int) + size * sizeof(int));
-    uniqueItems = getUniqueItems(str);
-    result->setValues = uniqueItems;
-    result->size = size;
+//    size = getIntSetSize(str);
+//    result = (IntSetPrt) palloc(sizeof(int) + size * sizeof(int));
+//    uniqueItems = getUniqueItems(str);
+//    result->setValues = uniqueItems;
+//    result->size = size;
 
     PG_RETURN_POINTER(result);
 }
 
-int validateIntSetRawValue(char* rawValue){
-    return 0;
-}
 
+//TODO:Implement output function
+PG_FUNCTION_INFO_V1(intset_out);
+
+Datum intset_out(PG_FUNCTION_ARGS){
+    IntSetPrt intset = (IntSetPrt) PG_GETARG_POINTER(0);
+    char *result;
+}
 //PG_FUNCTION_INFO_V1(complex_out);
 //
 //Datum
