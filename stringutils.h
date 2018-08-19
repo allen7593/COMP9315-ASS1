@@ -22,5 +22,9 @@ char **splitCharStr(char *str);
 
 void removeSpaces(char *str);
 
+int countSpace(char* str);
+
 void removeBraces(char *str);
+
+void initEmptyCharPtr(char* str, int size);
 #endif //STRINGUTILS_H

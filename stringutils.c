@@ -3,26 +3,26 @@
 // Created by allen on 8/18/2018.
 //
 #include <malloc.h>
-#include <mem.h>
+#include <string.h>
 #include <ctype.h>
 #include "stringutils.h"
 
 char **splitCharStr(char *str) {
-    char *iter = malloc(sizeof(str));
-    strcpy(iter, str);
+    char *iter = str;
     char **strList = NULL;
-    char *p = strtok(iter, ",");
+    char *p = NULL;
+    p = strtok(iter, ",");
     int size = 0;
 
     while (p) {
         strList = realloc(strList, sizeof(char *) * ++size);
-        strList[size - 1] = p;
+        strList[size - 1] = malloc(sizeof(char) * (strlen(strcat(p, "\0")) + 1));
+        strcpy(strList[size - 1], strcat(p, "\0"));
         p = strtok(NULL, ",");
     }
 
     strList = realloc(strList, sizeof(char *) * size);
     strList[size] = NULL;
-
     return strList;
 }
 
@@ -47,7 +47,8 @@ int validateIntSetRawValue(char *rawStr) {
     while (*iter != '\0' && valid == 0) {
         if (isalpha((int) *iter)) { // If current char is not alphabet
             valid = -1;
-        } else if (find == 0 && !(*iter == '-' || *iter == ' ' || *iter == ',' || isdigit((int) *iter))) { // When we not find any digit, if current char is special char other than ' ', '-', ',' and digit
+        } else if (find == 0 && !(*iter == '-' || *iter == ' ' || *iter == ',' ||
+                                  isdigit((int) *iter))) { // When we not find any digit, if current char is special char other than ' ', '-', ',' and digit
             valid = -1;
         } else if (isdigit((int) *iter) && isdigit((int) *(iter - 1)) &&
                    find == 1) { // When a digit found, current and previous char are all digits
@@ -68,7 +69,7 @@ int validateIntSetRawValue(char *rawStr) {
 int getIntSetSize(char **rawValue) {
     int size = 0;
     char **iter = rawValue;
-    while (*iter) {
+    while (*iter != NULL) {
         size++;
         iter++;
     }
@@ -88,7 +89,10 @@ int *convertCharToIntArray(char **str) {
 }
 
 void removeSpaces(char *str) {
-    char *i = str;
+    int size = strlen(str);
+    int spaceNum = countSpace(str);
+    char *a = malloc(size - spaceNum + 1 * sizeof(char));
+    char *i = a;
     char *j = str;
     while (*j != '\0') {
         *i = *j++;
@@ -97,12 +101,27 @@ void removeSpaces(char *str) {
         }
     }
     *i = '\0';
+    strcpy(str, a);
+    free(a);
+}
+
+int countSpace(char *str) {
+    int spaceNum = 0;
+    char *iter = str;
+    while (*iter) {
+        if (*iter == ' ') {
+            spaceNum++;
+        }
+        iter++;
+    }
+    return spaceNum;
 }
 
 void removeBraces(char *str) {
-    char *i = str;
-    char *j = str;
     int size = strlen(str);
+    char *i = malloc((size - 1) * sizeof(char));
+    initEmptyCharPtr(i, size - 1);
+    char *j = str;
     int i_start = 0;
     int j_start = 1;
     int j_end = size - 1;
@@ -111,4 +130,13 @@ void removeBraces(char *str) {
         i[i_start] = j[j_start];
     }
     i[i_start] = '\0';
+    strcpy(str, i);
+    free(i);
+}
+
+void initEmptyCharPtr(char *str, int size) {
+    int i = 0;
+    for (i = 0; i < size; i++) {
+        str[i] = '\0';
+    }
 }

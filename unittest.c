@@ -29,76 +29,68 @@ void testSplitStringAndSize() {
     char testStr5[] = "{1, 999, 13, 666, -5}";
     char testStr6[] = "{    1  ,  3  ,  5 , 7,9 }";
     char testStr7[] = "{    1  ,  3  ,  -5 , 7,9 }";
-    char **list;
     int size = 0;
 
     printf("Testing: %s\n", testStr1);
     removeBraces(testStr1);
     removeSpaces(testStr1);
-    list = splitCharStr(testStr1);
-    size = getIntSetSize(list);
+    char **list1 = splitCharStr(testStr1);
+    size = getIntSetSize(list1);
     printf("Size= %i\n", size);
-    printList(list);
-    free(list);
+    printList(list1);
 
     printf("Testing: %s\n", testStr2);
     removeBraces(testStr2);
     removeSpaces(testStr2);
-    list = splitCharStr(testStr2);
-    size = getIntSetSize(list);
+    char **list2 = splitCharStr(testStr2);
+    size = getIntSetSize(list2);
     printf("Size= %i\n", size);
-    printList(list);
-    free(list);
+    printList(list2);
 
     printf("Testing: %s\n", testStr3);
     removeBraces(testStr3);
     removeSpaces(testStr3);
-    list = splitCharStr(testStr3);
-    size = getIntSetSize(list);
+    char **list3 = splitCharStr(testStr3);
+    size = getIntSetSize(list3);
     printf("Size= %i\n", size);
-    printList(list);
-    free(list);
+    printList(list3);
 
     printf("Testing: %s\n", testStr4);
     removeBraces(testStr4);
     removeSpaces(testStr4);
-    list = splitCharStr(testStr4);
-    size = getIntSetSize(list);
+    char **list4 = splitCharStr(testStr4);
+    size = getIntSetSize(list4);
     printf("Size= %i\n", size);
-    printList(list);
-    free(list);
+    printList(list4);
 
     printf("Testing: %s\n", testStr5);
     removeBraces(testStr5);
     removeSpaces(testStr5);
-    list = splitCharStr(testStr5);
-    size = getIntSetSize(list);
+    char **list5 = splitCharStr(testStr5);
+    size = getIntSetSize(list5);
     printf("Size= %i\n", size);
-    printList(list);
-    free(list);
+    printList(list5);
 
     printf("Testing: %s\n", testStr6);
     removeBraces(testStr6);
     removeSpaces(testStr6);
-    list = splitCharStr(testStr6);
-    size = getIntSetSize(list);
+    char **list6 = splitCharStr(testStr6);
+    size = getIntSetSize(list6);
     printf("Size= %i\n", size);
-    printList(list);
-    free(list);
+    printList(list6);
 
     printf("Testing: %s\n", testStr7);
     removeBraces(testStr7);
     removeSpaces(testStr7);
-    list = splitCharStr(testStr7);
-    size = getIntSetSize(list);
+    char **list7 = splitCharStr(testStr7);
+    size = getIntSetSize(list7);
     printf("Size= %i\n", size);
-    printList(list);
-    free(list);
+    printList(list7);
 }
 
 void printList(char **list) {
     char **testList = list;
-    while (*testList) {
+    while (*testList != NULL) {
         printf("List Item: [%s]\n", *testList);
         testList++;
     }
