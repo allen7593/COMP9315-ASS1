@@ -17,12 +17,18 @@ void testStrIn();
 
 void testConvertCharArrToIntArr();
 
+void testCountDigits();
+
+void testConvertIntArrToCharArr();
+
 int main() {
     testValidateIntSetRawValueValid();
     testValidateIntSetRawValueInvalid();
     testSplitStringAndSize();
     testStrIn();
     testConvertCharArrToIntArr();
+    testCountDigits();
+    testConvertIntArrToCharArr();
     return 0;
 }
 
@@ -205,4 +211,66 @@ void testConvertCharArrToIntArr() {
         printf("List Item:[%i]\n", *inthead);
         inthead++;
     }
+}
+
+void testCountDigits() {
+    int test1 = 1234;
+    int test2 = 1;
+    int test3 = 1234567;
+    int test4 = -234;
+    int testValue = 0;
+    int failCount = 0;
+    printf("Start testing count digits---------------\n");
+    if (countDigit(testValue) != 1) {
+        failCount++;
+        printf("%i, digits count incorrect", testValue);
+    }
+    testValue = test1;
+    if (countDigit(testValue) != 4) {
+        failCount++;
+        printf("%i, digits count incorrect", testValue);
+    }
+    testValue = test2;
+    if (countDigit(testValue) != 1) {
+        failCount++;
+        printf("%i, digits count incorrect", testValue);
+    }
+    testValue = test3;
+    if (countDigit(testValue) != 7) {
+        failCount++;
+        printf("%i, digits count incorrect", testValue);
+    }
+    testValue = test4;
+    if (countDigit(testValue) != 4) {
+        failCount++;
+        printf("%i, digits count incorrect", testValue);
+    }
+    printf("End testing count digits---------------\n");
+    printf("Fail Count: %i\n", failCount);
+}
+
+void testConvertIntArrToCharArr() {
+    int test1[] = {1, 2, 3, 4, 5, 6};
+    int test2[] = {1, 22, 333, 4444, 5555, 666666};
+    int test3[] = {0, -22, 333, 4444, 5555, 666666};
+    int test4[] = {0, -22, 333, 4444, 5555, 666666, 7777777};
+    int test5[] = {};
+    char *testResult = NULL;
+
+    printf("Start testing IntArrToCharArr---------------\n");
+    testResult = convertIntArrToCharArr(test1, 6);
+    printf("Test1 Result: %s\n", testResult);
+
+    testResult = convertIntArrToCharArr(test2, 6);
+    printf("Test2 Result: %s\n", testResult);
+
+    testResult = convertIntArrToCharArr(test3, 6);
+    printf("Test3 Result: %s\n", testResult);
+
+    testResult = convertIntArrToCharArr(test4, 7);
+    printf("Test4 Result: %s\n", testResult);
+
+    testResult = convertIntArrToCharArr(test5, 0);
+    printf("Test5 Result: %s\n", testResult);
+    printf("End testing IntArrToCharArr---------------\n");
 }

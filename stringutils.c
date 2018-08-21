@@ -5,6 +5,7 @@
 #include <malloc.h>
 #include <string.h>
 #include <ctype.h>
+#include <stdio.h>
 #include "stringutils.h"
 
 char **splitCharStr(char *str) {
@@ -15,7 +16,9 @@ char **splitCharStr(char *str) {
     int size = 0;
 
     while (p) {
+        // TODO: find realloc in postgres
         strList = realloc(strList, sizeof(char *) * ++size);
+        // TODO: use pmalloc instaad
         strList[size - 1] = malloc(sizeof(char) * (strlen(strcat(p, "\0")) + 1));
         strcpy(strList[size - 1], strcat(p, "\0"));
         p = strtok(NULL, ",");
@@ -93,11 +96,10 @@ int strIn(char **str, const char *target) {
 
 int *convertCharArrToIntArr(char **str) {
     int size = getIntSetSize(str);
+    // TODO: use pmalloc instaad
     int *intset = malloc((size + 1) * sizeof(int));
     int *inthead = intset;
     char **head = str;
-    int *intend = inthead + size + 1;
-    intend = NULL;
 
     while (*head != NULL) {
         *inthead = atoi(*head);
@@ -107,13 +109,84 @@ int *convertCharArrToIntArr(char **str) {
     return intset;
 }
 
-char *convertIntArrToCharArr(int *intset) {
-    return NULL;
+char *convertIntArrToCharArr(int *intset, int size) {
+    int *inthead = intset;
+    int *intend = inthead + size;
+    int digits = 0;
+    int memToSet = 0;
+    int accumSize = 0;
+    int first = 1;
+    char delimeter = ',';
+    char *result = NULL;
+    char *tmp = NULL;
+    char* tmpNum = NULL;
+    char* tmpResult = NULL;
+
+    if(size == 0){
+        return NULL;
+    }
+
+    while (inthead < intend) {
+        digits = countDigit(*inthead);
+        memToSet = digits + 1;
+        if (inthead == intset) {
+            delimeter = ' ';
+        }
+        accumSize += memToSet;
+        // TODO: use pmalloc instaad
+        tmp = malloc(memToSet * sizeof(char));
+        // TODO: use pmalloc instaad
+        tmpNum = malloc(digits* sizeof(char));
+        sprintf(tmpNum, "%d", *inthead);
+        strcpy(tmp, strcat(&delimeter, tmpNum));
+        if(result != NULL){
+            first = 0;
+        }
+        tmpResult = result;
+        // TODO: use pmalloc instaad
+        result = malloc(accumSize * sizeof(char));
+        if(first == 0) {
+            strcpy(result, strcat(tmpResult,tmp));
+        } else{
+            strcpy(result, tmp);
+        }
+        // Use pfree instead
+//        free(tmp);
+//        free(tmpNum);
+//        free(tmpResult);
+
+        tmp = NULL;
+        tmpNum = NULL;
+        tmpResult = NULL;
+
+        digits = 0;
+        delimeter = ',';
+        inthead++;
+    }
+    removeSpaces(result);
+    return result;
+}
+
+int countDigit(int num) {
+    int target = num;
+    int digits = 0;
+    if (num < 0) {
+        digits = 1;
+        target = target * -1;
+    } else if (num == 0) {
+        return 1;
+    }
+    while (target != 0) {
+        digits++;
+        target /= 10;
+    }
+    return digits;
 }
 
 void removeSpaces(char *str) {
     int size = strlen(str);
     int spaceNum = countSpace(str);
+    // TODO: use pmalloc instaad
     char *a = malloc(size - spaceNum + 1 * sizeof(char));
     char *i = a;
     char *j = str;
@@ -142,6 +215,7 @@ int countSpace(char *str) {
 
 void removeBraces(char *str) {
     int size = strlen(str);
+    // TODO: use pmalloc instaad
     char *i = malloc((size - 1) * sizeof(char));
     initEmptyCharPtr(i, size - 1);
     char *j = str;

@@ -18,7 +18,9 @@ int strIn(char **str, const char *target);
 int *convertCharArrToIntArr(char **str);
 
 //TODO: Need to be implemented
-char *convertIntArrToCharArr(int *intset);
+char *convertIntArrToCharArr(int *intset, int size);
+
+int countDigit(int num);
 
 char **splitCharStr(char *str);
 
