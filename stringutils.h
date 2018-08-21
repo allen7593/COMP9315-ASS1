@@ -12,19 +12,22 @@ int getIntSetSize(char **rawValue);
 //TODO: Need to be implemented
 char **getUniqueItems(char **rawValue);
 
-//TODO: Need to be implemented
-int strIn(char **str, char *target);
+int strIn(char **str, const char *target);
 
 //TODO: Need to be implemented
-int *convertCharToIntArray(char **str);
+int *convertCharArrToIntArr(char **str);
+
+//TODO: Need to be implemented
+char *convertIntArrToCharArr(int *intset);
 
 char **splitCharStr(char *str);
 
 void removeSpaces(char *str);
 
-int countSpace(char* str);
+int countSpace(char *str);
 
 void removeBraces(char *str);
 
-void initEmptyCharPtr(char* str, int size);
+void initEmptyCharPtr(char *str, int size);
+
 #endif //STRINGUTILS_H

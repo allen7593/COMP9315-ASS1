@@ -13,11 +13,16 @@ void testSplitStringAndSize();
 
 void printList(char **list);
 
+void testStrIn();
+
+void testConvertCharArrToIntArr();
 
 int main() {
     testValidateIntSetRawValueValid();
     testValidateIntSetRawValueInvalid();
     testSplitStringAndSize();
+    testStrIn();
+    testConvertCharArrToIntArr();
     return 0;
 }
 
@@ -155,5 +160,49 @@ void testValidateIntSetRawValueInvalid() {
     }
     if (validateIntSetRawValue(testStr7) != -1) {
         printf("String %s valid failed\n", testStr6);
+    }
+}
+
+void testStrIn() {
+    char **charlist = malloc(4 * sizeof(char *));
+    int i = 0;
+    for (i = 0; i < 3; i++) {
+        charlist[i] = malloc(5 * sizeof(char));
+        sprintf(charlist[i], "%d", i);
+    }
+    charlist[i] = NULL;
+
+    if (strIn(charlist, "0") != 0) {
+        printf("String not contain: %s", "0");
+    }
+    if (strIn(charlist, "1") != 0) {
+        printf("String not contain: %s", "1");
+    }
+    if (strIn(charlist, "2") != 0) {
+        printf("String not contain: %s", "2");
+    }
+    if (strIn(charlist, "4") == 0) {
+        printf("String contain: %s", "4");
+    }
+}
+
+void testConvertCharArrToIntArr() {
+    char **charlist = malloc(3 * sizeof(char *));
+    int i = 0;
+    for (i = 0; i < 3; i++) {
+        charlist[i] = malloc(5 * sizeof(char));
+        sprintf(charlist[i], "%d", i);
+    }
+    charlist[i] = NULL;
+    // Size of the array is important
+    int size = getIntSetSize(charlist);
+
+    int *intset = convertCharArrToIntArr(charlist);
+    int *inthead = intset;
+    int *intend = inthead + size;
+    printf("Test Convert CharArr To IntArr----- \n");
+    while (inthead < intend) {
+        printf("List Item:[%i]\n", *inthead);
+        inthead++;
     }
 }

@@ -80,11 +80,34 @@ char **getUniqueItems(char **rawValue) {
     return NULL;
 }
 
-int strIn(char **str, char *target) {
-    return 0;
+int strIn(char **str, const char *target) {
+    char **head = str;
+    while (*head != NULL) {
+        if (strcmp(*head, target) == 0) {
+            return 0;
+        }
+        head++;
+    }
+    return 1;
 }
 
-int *convertCharToIntArray(char **str) {
+int *convertCharArrToIntArr(char **str) {
+    int size = getIntSetSize(str);
+    int *intset = malloc((size + 1) * sizeof(int));
+    int *inthead = intset;
+    char **head = str;
+    int *intend = inthead + size + 1;
+    intend = NULL;
+
+    while (*head != NULL) {
+        *inthead = atoi(*head);
+        inthead++;
+        head++;
+    }
+    return intset;
+}
+
+char *convertIntArrToCharArr(int *intset) {
     return NULL;
 }
 
