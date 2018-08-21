@@ -16,7 +16,7 @@ char **splitCharStr(char *str) {
     int size = 0;
 
     while (p) {
-        // TODO: find realloc in postgres
+        // TODO: use repalloc instaad
         strList = realloc(strList, sizeof(char *) * ++size);
         // TODO: use pmalloc instaad
         strList[size - 1] = malloc(sizeof(char) * (strlen(strcat(p, "\0")) + 1));
@@ -119,10 +119,9 @@ char *convertIntArrToCharArr(int *intset, int size) {
     char delimeter = ',';
     char *result = NULL;
     char *tmp = NULL;
-    char* tmpNum = NULL;
-    char* tmpResult = NULL;
+    char *tmpNum = NULL;
 
-    if(size == 0){
+    if (size == 0) {
         return NULL;
     }
 
@@ -136,18 +135,17 @@ char *convertIntArrToCharArr(int *intset, int size) {
         // TODO: use pmalloc instaad
         tmp = malloc(memToSet * sizeof(char));
         // TODO: use pmalloc instaad
-        tmpNum = malloc(digits* sizeof(char));
+        tmpNum = malloc(digits * sizeof(char));
         sprintf(tmpNum, "%d", *inthead);
         strcpy(tmp, strcat(&delimeter, tmpNum));
-        if(result != NULL){
+        if (result != NULL) {
             first = 0;
         }
-        tmpResult = result;
-        // TODO: use pmalloc instaad
-        result = malloc(accumSize * sizeof(char));
-        if(first == 0) {
-            strcpy(result, strcat(tmpResult,tmp));
-        } else{
+        // TODO: use repalloc instaad
+        result = realloc(result, accumSize * sizeof(char));
+        if (first == 0) {
+            strcat(result, tmp);
+        } else {
             strcpy(result, tmp);
         }
         // Use pfree instead
@@ -157,7 +155,6 @@ char *convertIntArrToCharArr(int *intset, int size) {
 
         tmp = NULL;
         tmpNum = NULL;
-        tmpResult = NULL;
 
         digits = 0;
         delimeter = ',';
