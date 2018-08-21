@@ -19,7 +19,7 @@ char **splitCharStr(char *str) {
         // TODO: use repalloc instaad
         strList = realloc(strList, sizeof(char *) * ++size);
         // TODO: use pmalloc instaad
-        strList[size - 1] = malloc(sizeof(char) * (strlen(strcat(p, "\0")) + 1));
+        strList[size - 1] = malloc(strlen(strcat(p, "\0")) + 1);
         strcpy(strList[size - 1], strcat(p, "\0"));
         p = strtok(NULL, ",");
     }
@@ -120,6 +120,7 @@ char *convertIntArrToCharArr(int *intset, int size) {
     char *result = NULL;
     char *tmp = NULL;
     char *tmpNum = NULL;
+    char *tmpReuslt = NULL;
 
     if (size == 0) {
         return NULL;
@@ -142,7 +143,10 @@ char *convertIntArrToCharArr(int *intset, int size) {
             first = 0;
         }
         // TODO: use repalloc instaad
-        result = realloc(result, accumSize * sizeof(char));
+        tmpReuslt = realloc(result, sizeof(char) * accumSize);
+//        free(result);
+        result = tmpReuslt;
+        tmpReuslt = NULL;
         if (first == 0) {
             strcat(result, tmp);
         } else {

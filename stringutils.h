@@ -14,10 +14,8 @@ char **getUniqueItems(char **rawValue);
 
 int strIn(char **str, const char *target);
 
-//TODO: Need to be implemented
 int *convertCharArrToIntArr(char **str);
 
-//TODO: Need to be implemented
 char *convertIntArrToCharArr(int *intset, int size);
 
 int countDigit(int num);

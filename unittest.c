@@ -97,6 +97,14 @@ void testSplitStringAndSize() {
     size = getIntSetSize(list7);
     printf("Size= %i\n", size);
     printList(list7);
+
+//    free(list1);;
+//    free(list2);
+//    free(list3);
+//    free(list4);
+//    free(list5);
+//    free(list6);
+//    free(list7);
 }
 
 void printList(char **list) {
@@ -211,6 +219,8 @@ void testConvertCharArrToIntArr() {
         printf("List Item:[%i]\n", *inthead);
         inthead++;
     }
+//    free(charlist);
+//    free(intset);
 }
 
 void testCountDigits() {
