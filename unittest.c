@@ -3,6 +3,7 @@
 //
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "stringutils.h"
 
 void testValidateIntSetRawValueValid();
@@ -21,6 +22,8 @@ void testCountDigits();
 
 void testConvertIntArrToCharArr();
 
+void testIntegrate();
+
 int main() {
     testValidateIntSetRawValueValid();
     testValidateIntSetRawValueInvalid();
@@ -29,6 +32,7 @@ int main() {
     testConvertCharArrToIntArr();
     testCountDigits();
     testConvertIntArrToCharArr();
+    testIntegrate();
     return 0;
 }
 
@@ -154,6 +158,7 @@ void testValidateIntSetRawValueInvalid() {
     char testStr5[] = "{1, 2, 3, 4, five}";
     char testStr6[] = "{ 1 2 3 4 }";
     char testStr7[] = "{ 1, .2, 3, 4 }";
+    char testStr8[] = "{ 1, ,,, 4 }";
     if (validateIntSetRawValue(testStr1) != -1) {
         printf("String %s valid failed\n", testStr1);
     }
@@ -173,7 +178,10 @@ void testValidateIntSetRawValueInvalid() {
         printf("String %s valid failed\n", testStr6);
     }
     if (validateIntSetRawValue(testStr7) != -1) {
-        printf("String %s valid failed\n", testStr6);
+        printf("String %s valid failed\n", testStr7);
+    }
+    if (validateIntSetRawValue(testStr8) != -1) {
+        printf("String %s valid failed\n", testStr8);
     }
 }
 
@@ -283,4 +291,33 @@ void testConvertIntArrToCharArr() {
     testResult = convertIntArrToCharArr(test5, 0);
     printf("Test5 Result: %s\n", testResult);
     printf("End testing IntArrToCharArr---------------\n");
+}
+
+void testIntegrate() {
+    char *str = NULL;
+    int size = 0;
+    char **charlist = NULL;
+    int *intlist = NULL;
+    int i = 0;
+
+    str = malloc(5);
+    strcpy(str, "{1,2,3}");
+
+    if (validateIntSetRawValue(str) != 0)
+        printf("Error");
+
+    str = removeBraces(str);
+    printf("%s\n", str);
+    removeSpaces(str);
+    printf("%s\n", str);
+    charlist = splitCharStr(str);
+    printList(charlist);
+    size = getIntSetSize(charlist);
+    printf("%i\n", size);
+    intlist = convertCharArrToIntArr(charlist);
+
+    IntSet *result = malloc(size * sizeof(IntSet));
+    for (i = 0; i < size; i++, intlist++) {
+        result[i].val = *intlist;
+    }
 }

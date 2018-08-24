@@ -37,7 +37,7 @@ void removeSpaces(char *str);
 
 int countSpace(char *str);
 
-void removeBraces(char *str);
+char* removeBraces(char *str);
 
 void initEmptyCharPtr(char *str, int size);
 
@@ -58,16 +58,18 @@ intset_in(PG_FUNCTION_ARGS) {
     char **charlist = NULL;
     int *intlist = NULL;
     int i = 0;
+    char *tmpStr = palloc(strlen(str));
+    strcpy(tmpStr, str);
 
-    if (validateIntSetRawValue(str) != 0)
+    int test = validateIntSetRawValue(tmpStr);
+    if ( test != 0)
         ereport(ERROR,
                 (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-                        errmsg("invalid input syntax for intset: \"%s\"",
-                               str)));
-
-    removeSpaces(str);
-    removeBraces(str);
-    charlist = splitCharStr(str);
+                        errmsg("invalid input syntax for intset: \"%s\" %i",
+                               tmpStr, test)));
+    tmpStr = removeBraces(tmpStr);
+    removeSpaces(tmpStr);
+    charlist = splitCharStr(tmpStr);
     size = getIntSetSize(charlist);
     intlist = convertCharArrToIntArr(charlist);
 
@@ -138,12 +140,14 @@ int validateIntSetRawValue(char *rawStr) {
     char *iter = rawStr;
     int valid = 0;
     int find = 0;
+    char* newStr= NULL;
     if (iter[0] == '{' && iter[strlen(rawStr) - 1] == '}') {
         valid = 0;
     } else {
         valid = -1;
     }
-    removeBraces(rawStr);
+    newStr = removeBraces(rawStr);
+    iter = newStr;
     while (*iter != '\0' && valid == 0) {
         if (isalpha((int) *iter)) { // If current char is not alphabet
             valid = -1;
@@ -306,7 +310,7 @@ int countSpace(char *str) {
     return spaceNum;
 }
 
-void removeBraces(char *str) {
+char* removeBraces(char *str) {
     int size = strlen(str);
     // TODO: use pmalloc instaad
     char *i = palloc((size - 1) * sizeof(char));
@@ -320,6 +324,7 @@ void removeBraces(char *str) {
         i[i_start] = j[j_start];
     }
     i[i_start] = '\0';
+    return i;
 }
 
 void initEmptyCharPtr(char *str, int size) {

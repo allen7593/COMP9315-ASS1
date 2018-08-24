@@ -1,4 +1,4 @@
-
+CREATE TYPE intset;
 
 CREATE FUNCTION intset_in(cstring)
    RETURNS intset
