@@ -11,20 +11,16 @@ typedef struct IntSet {
 
 int validateIntSetRawValue(char *rawStr);
 
-int getIntSetSize(char **rawValue);
-
 //TODO: Need to be implemented
 char **getUniqueItems(char **rawValue);
 
 int strIn(char **str, const char *target);
 
-int *convertCharArrToIntArr(char **str);
-
 char *convertIntArrToCharArr(int *intset, int size);
 
 int countDigit(int num);
 
-char **splitCharStr(char *str);
+int *splitCharStr(char *str, int* size);
 
 void removeSpaces(char *str);
 

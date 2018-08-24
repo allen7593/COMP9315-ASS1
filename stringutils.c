@@ -8,25 +8,20 @@
 #include <stdio.h>
 #include "stringutils.h"
 
-char **splitCharStr(char *str) {
+int *splitCharStr(char *str, int* size) {
     char *iter = str;
-    char **strList = NULL;
     char *p = NULL;
     p = strtok(iter, ",");
-    int size = 0;
+    *size = 0;
+    int *intList = NULL;
 
     while (p) {
-        // TODO: use repalloc instaad
-        strList = realloc(strList, sizeof(char *) * ++size);
-        // TODO: use pmalloc instaad
-        strList[size - 1] = malloc(strlen(strcat(p, "\0")) + 1);
-        strcpy(strList[size - 1], strcat(p, "\0"));
+        intList = realloc(intList, sizeof(int) * ++*size);
+        *(intList + *size - 1) = atoi(p);
         p = strtok(NULL, ",");
     }
 
-    strList = realloc(strList, sizeof(char *) * size);
-    strList[size] = NULL;
-    return strList;
+    return intList;
 }
 
 int validateIntSetRawValue(char *rawStr) {
@@ -41,7 +36,7 @@ int validateIntSetRawValue(char *rawStr) {
     char *iter = rawStr;
     int valid = 0;
     int find = 0;
-    char* newStr= NULL;
+    char *newStr = NULL;
     if (iter[0] == '{' && iter[strlen(rawStr) - 1] == '}') {
         valid = 0;
     } else {
@@ -71,16 +66,6 @@ int validateIntSetRawValue(char *rawStr) {
     return valid;
 }
 
-int getIntSetSize(char **rawValue) {
-    int size = 0;
-    char **iter = rawValue;
-    while (*iter != NULL) {
-        size++;
-        iter++;
-    }
-    return size;
-}
-
 char **getUniqueItems(char **rawValue) {
     return NULL;
 }
@@ -94,21 +79,6 @@ int strIn(char **str, const char *target) {
         head++;
     }
     return 1;
-}
-
-int *convertCharArrToIntArr(char **str) {
-    int size = getIntSetSize(str);
-    // TODO: use pmalloc instaad
-    int *intset = malloc((size + 1) * sizeof(int));
-    int *inthead = intset;
-    char **head = str;
-
-    while (*head != NULL) {
-        *inthead = atoi(*head);
-        inthead++;
-        head++;
-    }
-    return intset;
 }
 
 char *convertIntArrToCharArr(int *intset, int size) {
@@ -211,7 +181,7 @@ int countSpace(char *str) {
     return spaceNum;
 }
 
-char* removeBraces(char *str) {
+char *removeBraces(char *str) {
     int size = strlen(str);
     // TODO: use pmalloc instaad
     char *i = malloc((size - 1) * sizeof(char));

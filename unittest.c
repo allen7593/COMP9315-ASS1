@@ -12,11 +12,9 @@ void testValidateIntSetRawValueInvalid();
 
 void testSplitStringAndSize();
 
-void printList(char **list);
+void printList(int *list, int size);
 
 void testStrIn();
-
-void testConvertCharArrToIntArr();
 
 void testCountDigits();
 
@@ -29,7 +27,6 @@ int main() {
     testValidateIntSetRawValueInvalid();
     testSplitStringAndSize();
     testStrIn();
-    testConvertCharArrToIntArr();
     testCountDigits();
     testConvertIntArrToCharArr();
     testIntegrate();
@@ -44,78 +41,72 @@ void testSplitStringAndSize() {
     char testStr5[] = "{1, 999, 13, 666, -5}";
     char testStr6[] = "{    1  ,  3  ,  5 , 7,9 }";
     char testStr7[] = "{    1  ,  3  ,  -5 , 7,9 }";
+    char *testStr = NULL;
     int size = 0;
 
     printf("Testing: %s\n", testStr1);
-    removeBraces(testStr1);
-    removeSpaces(testStr1);
-    char **list1 = splitCharStr(testStr1);
-    size = getIntSetSize(list1);
+    testStr = removeBraces(testStr1);
+    removeSpaces(testStr);
+    int *list1 = splitCharStr(testStr, &size);
     printf("Size= %i\n", size);
-    printList(list1);
+    printList(list1, size);
 
     printf("Testing: %s\n", testStr2);
-    removeBraces(testStr2);
-    removeSpaces(testStr2);
-    char **list2 = splitCharStr(testStr2);
-    size = getIntSetSize(list2);
+    testStr = removeBraces(testStr2);
+    removeSpaces(testStr);
+    int *list2 = splitCharStr(testStr, &size);
     printf("Size= %i\n", size);
-    printList(list2);
+    printList(list2, size);
 
     printf("Testing: %s\n", testStr3);
-    removeBraces(testStr3);
-    removeSpaces(testStr3);
-    char **list3 = splitCharStr(testStr3);
-    size = getIntSetSize(list3);
+    testStr = removeBraces(testStr3);
+    removeSpaces(testStr);
+    int *list3 = splitCharStr(testStr, &size);
     printf("Size= %i\n", size);
-    printList(list3);
+    printList(list3, size);
 
     printf("Testing: %s\n", testStr4);
-    removeBraces(testStr4);
-    removeSpaces(testStr4);
-    char **list4 = splitCharStr(testStr4);
-    size = getIntSetSize(list4);
+    testStr = removeBraces(testStr4);
+    removeSpaces(testStr);
+    int *list4 = splitCharStr(testStr, &size);
     printf("Size= %i\n", size);
-    printList(list4);
+    printList(list4, size);
 
     printf("Testing: %s\n", testStr5);
-    removeBraces(testStr5);
-    removeSpaces(testStr5);
-    char **list5 = splitCharStr(testStr5);
-    size = getIntSetSize(list5);
+    testStr = removeBraces(testStr5);
+    removeSpaces(testStr);
+    int *list5 = splitCharStr(testStr, &size);
     printf("Size= %i\n", size);
-    printList(list5);
+    printList(list5, size);
 
     printf("Testing: %s\n", testStr6);
-    removeBraces(testStr6);
-    removeSpaces(testStr6);
-    char **list6 = splitCharStr(testStr6);
-    size = getIntSetSize(list6);
+    testStr = removeBraces(testStr6);
+    removeSpaces(testStr);
+    int *list6 = splitCharStr(testStr, &size);
     printf("Size= %i\n", size);
-    printList(list6);
+    printList(list6, size);
 
     printf("Testing: %s\n", testStr7);
-    removeBraces(testStr7);
-    removeSpaces(testStr7);
-    char **list7 = splitCharStr(testStr7);
-    size = getIntSetSize(list7);
+    testStr = removeBraces(testStr7);
+    removeSpaces(testStr);
+    int *list7 = splitCharStr(testStr, &size);
     printf("Size= %i\n", size);
-    printList(list7);
+    printList(list7, size);
 
-//    free(list1);;
-//    free(list2);
-//    free(list3);
-//    free(list4);
-//    free(list5);
-//    free(list6);
-//    free(list7);
+    free(list1);;
+    free(list2);
+    free(list3);
+    free(list4);
+    free(list5);
+    free(list6);
+    free(list7);
 }
 
-void printList(char **list) {
-    char **testList = list;
-    while (*testList != NULL) {
-        printf("List Item: [%s]\n", *testList);
-        testList++;
+void printList(int *list, int size) {
+    int *testList = list;
+    int i = 0;
+    for (i = 0; i < size; i++) {
+        printf("List Item: [%i]\n", *(testList + i));
     }
 }
 
@@ -208,29 +199,6 @@ void testStrIn() {
     }
 }
 
-void testConvertCharArrToIntArr() {
-    char **charlist = malloc(3 * sizeof(char *));
-    int i = 0;
-    for (i = 0; i < 3; i++) {
-        charlist[i] = malloc(5 * sizeof(char));
-        sprintf(charlist[i], "%d", i);
-    }
-    charlist[i] = NULL;
-    // Size of the array is important
-    int size = getIntSetSize(charlist);
-
-    int *intset = convertCharArrToIntArr(charlist);
-    int *inthead = intset;
-    int *intend = inthead + size;
-    printf("Test Convert CharArr To IntArr----- \n");
-    while (inthead < intend) {
-        printf("List Item:[%i]\n", *inthead);
-        inthead++;
-    }
-//    free(charlist);
-//    free(intset);
-}
-
 void testCountDigits() {
     int test1 = 1234;
     int test2 = 1;
@@ -310,11 +278,7 @@ void testIntegrate() {
     printf("%s\n", str);
     removeSpaces(str);
     printf("%s\n", str);
-    charlist = splitCharStr(str);
-    printList(charlist);
-    size = getIntSetSize(charlist);
-    printf("%i\n", size);
-    intlist = convertCharArrToIntArr(charlist);
+    intlist = splitCharStr(str, &size);
 
     IntSet *result = malloc(size * sizeof(IntSet));
     for (i = 0; i < size; i++, intlist++) {
