@@ -5,6 +5,10 @@
 #ifndef STRINGUTILS_H
 #define STRINGUTILS_H
 
+typedef struct IntSet {
+    int val;
+} IntSet;
+
 int validateIntSetRawValue(char *rawStr);
 
 int getIntSetSize(char **rawValue);
@@ -26,7 +30,7 @@ void removeSpaces(char *str);
 
 int countSpace(char *str);
 
-void removeBraces(char *str);
+char* removeBraces(char *str);
 
 void initEmptyCharPtr(char *str, int size);
 

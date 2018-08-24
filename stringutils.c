@@ -41,12 +41,14 @@ int validateIntSetRawValue(char *rawStr) {
     char *iter = rawStr;
     int valid = 0;
     int find = 0;
+    char* newStr= NULL;
     if (iter[0] == '{' && iter[strlen(rawStr) - 1] == '}') {
         valid = 0;
     } else {
         valid = -1;
     }
-    removeBraces(rawStr);
+    newStr = removeBraces(rawStr);
+    iter = newStr;
     while (*iter != '\0' && valid == 0) {
         if (isalpha((int) *iter)) { // If current char is not alphabet
             valid = -1;
@@ -144,7 +146,6 @@ char *convertIntArrToCharArr(int *intset, int size) {
         }
         // TODO: use repalloc instaad
         tmpReuslt = realloc(result, sizeof(char) * accumSize);
-//        free(result);
         result = tmpReuslt;
         tmpReuslt = NULL;
         if (first == 0) {
@@ -152,10 +153,6 @@ char *convertIntArrToCharArr(int *intset, int size) {
         } else {
             strcpy(result, tmp);
         }
-        // Use pfree instead
-//        free(tmp);
-//        free(tmpNum);
-//        free(tmpResult);
 
         tmp = NULL;
         tmpNum = NULL;
@@ -214,7 +211,7 @@ int countSpace(char *str) {
     return spaceNum;
 }
 
-void removeBraces(char *str) {
+char* removeBraces(char *str) {
     int size = strlen(str);
     // TODO: use pmalloc instaad
     char *i = malloc((size - 1) * sizeof(char));
@@ -228,8 +225,7 @@ void removeBraces(char *str) {
         i[i_start] = j[j_start];
     }
     i[i_start] = '\0';
-    strcpy(str, i);
-    free(i);
+    return i;
 }
 
 void initEmptyCharPtr(char *str, int size) {
