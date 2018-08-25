@@ -31,13 +31,13 @@ char *convertIntArrToCharArr(int *intset, int size);
 
 int countDigit(int num);
 
-char **splitCharStr(char *str);
+int *splitCharStr(char *str, int *size);
 
 void removeSpaces(char *str);
 
 int countSpace(char *str);
 
-char* removeBraces(char *str);
+char *removeBraces(char *str);
 
 void initEmptyCharPtr(char *str, int size);
 
@@ -55,27 +55,28 @@ Datum
 intset_in(PG_FUNCTION_ARGS) {
     char *str = PG_GETARG_CSTRING(0);
     int size = 0;
-    char **charlist = NULL;
+    int *charlist = NULL;
     int *intlist = NULL;
     int i = 0;
     char *tmpStr = palloc(strlen(str));
     strcpy(tmpStr, str);
 
     int test = validateIntSetRawValue(tmpStr);
-    if ( test != 0)
+    if (test != 0)
         ereport(ERROR,
                 (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
                         errmsg("invalid input syntax for intset: \"%s\" %i",
                                tmpStr, test)));
     tmpStr = removeBraces(tmpStr);
     removeSpaces(tmpStr);
-    charlist = splitCharStr(tmpStr);
-    size = getIntSetSize(charlist);
-    intlist = convertCharArrToIntArr(charlist);
+    intlist = splitCharStr(tmpStr, &size);
+    ereport(NOTICE, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), errmsg("point 2")));
+//    size = getIntSetSize(charlist);
+//    intlist = convertCharArrToIntArr(charlist);
 
     struct varlena *result = (struct varlena *) palloc(size * sizeof(IntSet) + 4);
     SET_VARSIZE(result, size * sizeof(IntSet));
-    IntSet * a = (IntSet * )((int32_t) result + 4);
+    IntSet *a = (IntSet *) ((int32_t) result + 4);
     for (i = 0; i < size; i++, intlist++) {
         a[i].val = *intlist;
     }
@@ -89,7 +90,7 @@ Datum
 intset_out(PG_FUNCTION_ARGS) {
     struct varlena *b = PG_GETARG_VARLENA_P(0);
 
-    IntSet* c = (IntSet*)(&(b->vl_dat));
+    IntSet *c = (IntSet *) (&(b->vl_dat));
     char *result;
     int n = VARSIZE_ANY_EXHDR(b) / sizeof(IntSet);
     int *intArr = convertIntSetArrToIntArr(c, n);
@@ -107,25 +108,31 @@ int *convertIntSetArrToIntArr(struct IntSet *intSet, int size) {
     return intArr;
 }
 
-char **splitCharStr(char *str) {
+int *splitCharStr(char *str, int *size) {
     char *iter = str;
-    char **strList = NULL;
     char *p = NULL;
+    int *intList = NULL;
+    int *tmpList = NULL;
     p = strtok(iter, ",");
-    int size = 0;
-
+    *size = 0;
     while (p) {
-        // TODO: use repalloc instaad
-        strList = repalloc(strList, sizeof(char *) * ++size);
-        // TODO: use pmalloc instaad
-        strList[size - 1] = palloc(strlen(strcat(p, "\0")) + 1);
-        strcpy(strList[size - 1], strcat(p, "\0"));
+        ereport(NOTICE, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), errmsg("point 3: %i", *size)));
+        ++(*size);
+        ereport(NOTICE, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), errmsg("point 5: %i", *size)));
+        if(*size == 1) {
+            ereport(NOTICE, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), errmsg("point 6: %i", *size)));
+            tmpList = palloc(sizeof(int) * (*size));
+            ereport(NOTICE, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), errmsg("point 7: %i", *size)));
+        } else{
+            ereport(NOTICE, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), errmsg("point 8: %i", *size)));
+            tmpList = repalloc(intList, sizeof(int) * (*size));
+        }
+        ereport(NOTICE, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), errmsg("point 4")));
+        intList = tmpList;
+        *(intList + *size - 1) = atoi(p);
         p = strtok(NULL, ",");
     }
-
-    strList = repalloc(strList, sizeof(char *) * size);
-    strList[size] = NULL;
-    return strList;
+    return intList;
 }
 
 int validateIntSetRawValue(char *rawStr) {
@@ -140,7 +147,7 @@ int validateIntSetRawValue(char *rawStr) {
     char *iter = rawStr;
     int valid = 0;
     int find = 0;
-    char* newStr= NULL;
+    char *newStr = NULL;
     if (iter[0] == '{' && iter[strlen(rawStr) - 1] == '}') {
         valid = 0;
     } else {
@@ -310,7 +317,7 @@ int countSpace(char *str) {
     return spaceNum;
 }
 
-char* removeBraces(char *str) {
+char *removeBraces(char *str) {
     int size = strlen(str);
     // TODO: use pmalloc instaad
     char *i = palloc((size - 1) * sizeof(char));
