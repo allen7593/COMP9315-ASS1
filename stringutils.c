@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include "stringutils.h"
 
-int *splitCharStr(char *str, int* size) {
+int *splitCharStr(char *str, int *size) {
     char *iter = str;
     char *p = NULL;
     p = strtok(iter, ",");
@@ -82,57 +82,60 @@ int strIn(char **str, const char *target) {
 }
 
 char *convertIntArrToCharArr(int *intset, int size) {
-    int *inthead = intset;
-    int *intend = inthead + size;
-    int digits = 0;
-    int memToSet = 0;
-    int accumSize = 0;
-    int first = 1;
-    char delimeter = ',';
-    char *result = NULL;
-    char *tmp = NULL;
-    char *tmpNum = NULL;
-    char *tmpReuslt = NULL;
+    int i = 0, digits = 0, memToSet = 0, accmSize = 0;
+    char *finalResult = NULL, *tmpResult = NULL, *separator = NULL, *tmpNum = NULL, *midStr = NULL;
+    for (i = 0; i < size; i++) {
+        // Setup separator
+        if (separator == NULL && i == 0) {
+            separator = malloc(1);
+            strcpy(separator, " ");
+        } else if (strcmp(separator, " ") == 0 && i > 0) {
+            strcpy(separator, ",");
+        }
 
-    if (size == 0) {
-        return NULL;
-    }
-
-    while (inthead < intend) {
-        digits = countDigit(*inthead);
+        // calculate mem allocation size
+        digits = countDigit(*(intset + i)) + 1;
         memToSet = digits + 1;
-        if (inthead == intset) {
-            delimeter = ' ';
-        }
-        accumSize += memToSet;
-        // TODO: use pmalloc instaad
-        tmp = malloc(memToSet * sizeof(char));
-        // TODO: use pmalloc instaad
-        tmpNum = malloc(digits * sizeof(char));
-        sprintf(tmpNum, "%d", *inthead);
-        strcpy(tmp, strcat(&delimeter, tmpNum));
-        if (result != NULL) {
-            first = 0;
-        }
-        // TODO: use repalloc instaad
-        tmpReuslt = realloc(result, sizeof(char) * accumSize);
-        result = tmpReuslt;
-        tmpReuslt = NULL;
-        if (first == 0) {
-            strcat(result, tmp);
+        accmSize += memToSet;
+
+        // allocate mem for final result
+        if (i == 0 && finalResult == NULL) {
+            tmpResult = malloc(accmSize * sizeof(char));
         } else {
-            strcpy(result, tmp);
+            tmpResult = realloc(finalResult, accmSize * sizeof(char));
         }
 
-        tmp = NULL;
-        tmpNum = NULL;
+        // Allocation failed
+        if (tmpResult != NULL) {
+            finalResult = tmpResult;
+        } else {
+            printf("Error");
+            return NULL;
+        }
+
+        // tmpNum
+        tmpNum = malloc(digits * sizeof(char));
+        // midStr
+        midStr = malloc(memToSet * sizeof(char));
+
+        strcpy(midStr, separator);
+        sprintf(tmpNum, "%i", *(intset + i));
+        strcat(midStr, tmpNum);
+
+        if (i == 0) {
+            strcpy(finalResult, midStr);
+        } else {
+            strcat(finalResult, midStr);
+        }
+
+        free(tmpNum);
+        free(midStr);
 
         digits = 0;
-        delimeter = ',';
-        inthead++;
+        memToSet = 0;
     }
-    removeSpaces(result);
-    return result;
+    removeSpaces(finalResult);
+    return finalResult;
 }
 
 int countDigit(int num) {
@@ -152,6 +155,9 @@ int countDigit(int num) {
 }
 
 void removeSpaces(char *str) {
+    if(str == NULL) {
+        return;
+    }
     int size = strlen(str);
     int spaceNum = countSpace(str);
     // TODO: use pmalloc instaad

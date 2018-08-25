@@ -246,18 +246,23 @@ void testConvertIntArrToCharArr() {
     printf("Start testing IntArrToCharArr---------------\n");
     testResult = convertIntArrToCharArr(test1, 6);
     printf("Test1 Result: %s\n", testResult);
+    free(testResult);
 
     testResult = convertIntArrToCharArr(test2, 6);
     printf("Test2 Result: %s\n", testResult);
+    free(testResult);
 
     testResult = convertIntArrToCharArr(test3, 6);
     printf("Test3 Result: %s\n", testResult);
+    free(testResult);
 
     testResult = convertIntArrToCharArr(test4, 7);
     printf("Test4 Result: %s\n", testResult);
+    free(testResult);
 
     testResult = convertIntArrToCharArr(test5, 0);
     printf("Test5 Result: %s\n", testResult);
+    free(testResult);
     printf("End testing IntArrToCharArr---------------\n");
 }
 
