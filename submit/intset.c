@@ -70,9 +70,6 @@ intset_in(PG_FUNCTION_ARGS) {
     tmpStr = removeBraces(tmpStr);
     removeSpaces(tmpStr);
     intlist = splitCharStr(tmpStr, &size);
-    ereport(NOTICE, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), errmsg("point 2")));
-//    size = getIntSetSize(charlist);
-//    intlist = convertCharArrToIntArr(charlist);
 
     struct varlena *result = (struct varlena *) palloc(size * sizeof(IntSet) + 4);
     SET_VARSIZE(result, size * sizeof(IntSet));
@@ -116,18 +113,12 @@ int *splitCharStr(char *str, int *size) {
     p = strtok(iter, ",");
     *size = 0;
     while (p) {
-        ereport(NOTICE, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), errmsg("point 3: %i", *size)));
         ++(*size);
-        ereport(NOTICE, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), errmsg("point 5: %i", *size)));
         if(*size == 1) {
-            ereport(NOTICE, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), errmsg("point 6: %i", *size)));
             tmpList = palloc(sizeof(int) * (*size));
-            ereport(NOTICE, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), errmsg("point 7: %i", *size)));
         } else{
-            ereport(NOTICE, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), errmsg("point 8: %i", *size)));
             tmpList = repalloc(intList, sizeof(int) * (*size));
         }
-        ereport(NOTICE, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), errmsg("point 4")));
         intList = tmpList;
         *(intList + *size - 1) = atoi(p);
         p = strtok(NULL, ",");
