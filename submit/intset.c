@@ -70,9 +70,9 @@ intset_in(PG_FUNCTION_ARGS) {
     tmpStr = removeBraces(tmpStr);
     removeSpaces(tmpStr);
     intlist = splitCharStr(tmpStr, &size);
+    struct varlena *result = (struct varlena *) palloc(size * sizeof(struct IntSet) + 4);
+    SET_VARSIZE(result, size * sizeof(struct IntSet));
 
-    struct varlena *result = (struct varlena *) palloc(size * sizeof(IntSet) + 4);
-    SET_VARSIZE(result, size * sizeof(IntSet));
     IntSet *a = (IntSet *) ((int32_t) result + 4);
     for (i = 0; i < size; i++, intlist++) {
         a[i].val = *intlist;
@@ -87,12 +87,13 @@ Datum
 intset_out(PG_FUNCTION_ARGS) {
     struct varlena *b = PG_GETARG_VARLENA_P(0);
 
-    IntSet *c = (IntSet *) (&(b->vl_dat));
+    IntSet *c = VARDATA(b);
     char *result;
-    int n = VARSIZE_ANY_EXHDR(b) / sizeof(IntSet);
-    int *intArr = convertIntSetArrToIntArr(c, n);
-    char *charlist = convertIntArrToCharArr(intArr, n);
+    int n = VARSIZE(b) / sizeof(struct IntSet);
 
+    int *intArr = convertIntSetArrToIntArr(c, n);
+
+    char *charlist = convertIntArrToCharArr(intArr, n);
     PG_RETURN_CSTRING(charlist);
 }
 
@@ -114,9 +115,9 @@ int *splitCharStr(char *str, int *size) {
     *size = 0;
     while (p) {
         ++(*size);
-        if(*size == 1) {
+        if (*size == 1) {
             tmpList = palloc(sizeof(int) * (*size));
-        } else{
+        } else {
             tmpList = repalloc(intList, sizeof(int) * (*size));
         }
         intList = tmpList;
@@ -209,58 +210,60 @@ int *convertCharArrToIntArr(char **str) {
 }
 
 char *convertIntArrToCharArr(int *intset, int size) {
-    int *inthead = intset;
-    int *intend = inthead + size;
-    int digits = 0;
-    int memToSet = 0;
-    int accumSize = 0;
-    int first = 1;
-    char delimeter = ',';
-    char *result = NULL;
-    char *tmp = NULL;
-    char *tmpNum = NULL;
-    char *tmpResult = NULL;
+    int i = 0, digits = 0, memToSet = 0, accmSize = 0;
+    char *finalResult = NULL, *tmpResult = NULL, *separator = NULL, *tmpNum = NULL, *midStr = NULL;
+    for (i = 0; i < size; i++) {
+        // Setup separator
+        if (separator == NULL && i == 0) {
+            separator = malloc(1);
+            strcpy(separator, " ");
+        } else if (strcmp(separator, " ") == 0 && i > 0) {
+            strcpy(separator, ",");
+        }
 
-    if (size == 0) {
-        return NULL;
-    }
-
-    while (inthead < intend) {
-        digits = countDigit(*inthead);
+        // calculate mem allocation size
+        digits = countDigit(*(intset + i)) + 1;
         memToSet = digits + 1;
-        if (inthead == intset) {
-            delimeter = ' ';
-        }
-        accumSize += memToSet;
-        // TODO: use pmalloc instaad
-        tmp = palloc(memToSet * sizeof(char));
-        // TODO: use pmalloc instaad
-        tmpNum = palloc(digits * sizeof(char));
-        sprintf(tmpNum, "%d", *inthead);
-        strcpy(tmp, strcat(&delimeter, tmpNum));
-        if (result != NULL) {
-            first = 0;
-        }
-        // TODO: use repalloc instaad
-        tmpResult = repalloc(result, sizeof(char) * accumSize);
-        result = tmpResult;
-        tmpResult = NULL;
-        if (first == 0) {
-            strcat(result, tmp);
-        } else {
-            strcpy(result, tmp);
-        }
-        // Use pfree instead
+        accmSize += memToSet;
 
-        tmp = NULL;
-        tmpNum = NULL;
+        // allocate mem for final result
+        if (i == 0 && finalResult == NULL) {
+            tmpResult = malloc(accmSize * sizeof(char));
+        } else {
+            tmpResult = realloc(finalResult, accmSize * sizeof(char));
+        }
+
+        // Allocation failed
+        if (tmpResult != NULL) {
+            finalResult = tmpResult;
+        } else {
+            printf("Error");
+            return NULL;
+        }
+
+        // tmpNum
+        tmpNum = malloc(digits * sizeof(char));
+        // midStr
+        midStr = malloc(memToSet * sizeof(char));
+
+        strcpy(midStr, separator);
+        sprintf(tmpNum, "%i", *(intset + i));
+        strcat(midStr, tmpNum);
+
+        if (i == 0) {
+            strcpy(finalResult, midStr);
+        } else {
+            strcat(finalResult, midStr);
+        }
+
+        free(tmpNum);
+        free(midStr);
 
         digits = 0;
-        delimeter = ',';
-        inthead++;
+        memToSet = 0;
     }
-    removeSpaces(result);
-    return result;
+    removeSpaces(finalResult);
+    return finalResult;
 }
 
 int countDigit(int num) {
