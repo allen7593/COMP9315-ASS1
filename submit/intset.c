@@ -43,6 +43,10 @@ void initEmptyCharPtr(char *str, int size);
 
 int *convertIntSetArrToIntArr(struct IntSet *intSet, int size);
 
+void printList(int *list, int size);
+
+char *addBraces(char *result, int accumSize);
+
 PG_MODULE_MAGIC;
 
 /*****************************************************************************
@@ -70,13 +74,14 @@ intset_in(PG_FUNCTION_ARGS) {
     tmpStr = removeBraces(tmpStr);
     removeSpaces(tmpStr);
     intlist = splitCharStr(tmpStr, &size);
-    struct varlena *result = (struct varlena *) palloc(size * sizeof(struct IntSet) + 4);
-    SET_VARSIZE(result, size * sizeof(struct IntSet));
+    struct varlena *result = (struct varlena *) palloc((size + 1) * sizeof(struct IntSet) + 4);
+    SET_VARSIZE(result, (size + 1) * sizeof(struct IntSet));
 
     IntSet *a = (IntSet *) ((int32_t) result + 4);
     for (i = 0; i < size; i++, intlist++) {
         a[i].val = *intlist;
     }
+    a[size].val = 0;
 
     PG_RETURN_POINTER(result);
 }
@@ -89,12 +94,20 @@ intset_out(PG_FUNCTION_ARGS) {
 
     IntSet *c = VARDATA(b);
     char *result;
-    int n = VARSIZE(b) / sizeof(struct IntSet);
+    int n = (VARSIZE(b) / sizeof(struct IntSet)) - 1;
 
     int *intArr = convertIntSetArrToIntArr(c, n);
 
     char *charlist = convertIntArrToCharArr(intArr, n);
     PG_RETURN_CSTRING(charlist);
+}
+
+void printList(int *list, int size) {
+    int *testList = list;
+    int i = 0;
+    for (i = 0; i < size; i++) {
+        ereport(NOTICE, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), errmsg("List Item: [%i]", *(testList + i))));
+    }
 }
 
 int *convertIntSetArrToIntArr(struct IntSet *intSet, int size) {
@@ -263,7 +276,18 @@ char *convertIntArrToCharArr(int *intset, int size) {
         memToSet = 0;
     }
     removeSpaces(finalResult);
+    finalResult = addBraces(finalResult, strlen(finalResult));
     return finalResult;
+}
+
+char *addBraces(char *result, int accumSize) {
+    int newSize = accumSize + 2;
+    char *newStr = malloc(newSize);
+    int i = 0;
+    strcpy(newStr, "{");
+    newStr = strcat(newStr, result);
+    strcat(newStr, "}");
+    return newStr;
 }
 
 int countDigit(int num) {
