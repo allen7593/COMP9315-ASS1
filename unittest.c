@@ -22,14 +22,17 @@ void testConvertIntArrToCharArr();
 
 void testIntegrate();
 
+void testUniqueItem();
+
 int main() {
-    testValidateIntSetRawValueValid();
-    testValidateIntSetRawValueInvalid();
-    testSplitStringAndSize();
-    testStrIn();
-    testCountDigits();
-    testConvertIntArrToCharArr();
-    testIntegrate();
+//    testValidateIntSetRawValueValid();
+//    testValidateIntSetRawValueInvalid();
+//    testSplitStringAndSize();
+//    testStrIn();
+//    testCountDigits();
+//    testConvertIntArrToCharArr();
+//    testIntegrate();
+    testUniqueItem();
     return 0;
 }
 
@@ -289,4 +292,35 @@ void testIntegrate() {
     for (i = 0; i < size; i++, intlist++) {
         result[i].val = *intlist;
     }
+}
+
+void testUniqueItem() {
+    int test1[] = {1, 2, 3, 4, 5, 6};
+    int test2[] = {1, 3, 1, 3, 1};
+    int test3[] = {1, 2, 3, 2, 3, 1};
+    int *final = NULL;
+    int size = 0;
+
+    printf("Strart Test GetUniqueItem: \n");
+    printf("Test 1 Start: \n");
+    size = 6;
+    final = getUniqueItems(test1, &size);
+    printList(final, size);
+    free(final);
+    printf("Test 1 End: \n");
+
+    printf("Test 2 Start: \n");
+    size = 5;
+    final = getUniqueItems(test2, &size);
+    printList(final, size);
+    free(final);
+    printf("Test 2 End: \n");
+
+    printf("Test 3 Start: \n");
+    size = 6;
+    final = getUniqueItems(test3, &size);
+    printList(final, size);
+    free(final);
+    printf("Test 3 End: \n");
+
 }

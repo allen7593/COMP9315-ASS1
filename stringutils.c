@@ -66,8 +66,34 @@ int validateIntSetRawValue(char *rawStr) {
     return valid;
 }
 
-char **getUniqueItems(char **rawValue) {
-    return NULL;
+int *getUniqueItems(int *rawValue, int *size) {
+    int *finalList = NULL, *tmpList = NULL;
+    int i = 0;
+    int newSize = 0;
+    for (i = 0; i < *size; i++) {
+        if (newSize == 0) {
+            tmpList = malloc(sizeof(int));
+            newSize++;
+            tmpList[0] = *(rawValue + i);
+        } else if (listIn(finalList, newSize, *(rawValue + i))) {
+            tmpList = realloc(finalList, (++newSize) * sizeof(int));
+            *(tmpList + newSize - 1) = *(rawValue + i);
+        }
+        finalList = tmpList;
+    }
+    *size = newSize;
+    return finalList;
+}
+
+int listIn(int *list, int listSize, int target) {
+    int *listHead = list;
+    int i = 0;
+    for (i = 0; i < listSize; i++) {
+        if (*(listHead + i) == target) {
+            return 0;
+        }
+    }
+    return 1;
 }
 
 int strIn(char **str, const char *target) {
@@ -155,7 +181,7 @@ int countDigit(int num) {
 }
 
 void removeSpaces(char *str) {
-    if(str == NULL) {
+    if (str == NULL) {
         return;
     }
     int size = strlen(str);
