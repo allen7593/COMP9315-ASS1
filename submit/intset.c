@@ -38,7 +38,7 @@ char *removeBraces(char *str);
 
 void initEmptyCharPtr(char *str, int size);
 
-int *convertIntSetArrToIntArr(struct IntSet *intSet, int size);
+int *convertIntSetArrToIntArr(struct IntSet *intSet, int *size);
 
 void printList(int *list, int size);
 
@@ -96,9 +96,9 @@ intset_out(PG_FUNCTION_ARGS) {
 
     IntSet *c = VARDATA(b);
     char *result;
-    int n = (VARSIZE(b) / sizeof(struct IntSet)) - 1;
+    int n = VARSIZE(b) / sizeof(struct IntSet);
 
-    int *intArr = convertIntSetArrToIntArr(c, n);
+    int *intArr = convertIntSetArrToIntArr(c, &n);
 
     char *charlist = convertIntArrToCharArr(intArr, n);
     PG_RETURN_CSTRING(charlist);
@@ -112,10 +112,11 @@ void printList(int *list, int size) {
     }
 }
 
-int *convertIntSetArrToIntArr(struct IntSet *intSet, int size) {
-    int *intArr = palloc(size * sizeof(int));
+int *convertIntSetArrToIntArr(struct IntSet *intSet, int *size) {
+    (*size)--;
+    int *intArr = palloc((*size) * sizeof(int));
     int i = 0;
-    for (i = 0; i < size; i++) {
+    for (i = 0; i < *size; i++) {
         intArr[i] = intSet[i].val;
     }
     return intArr;
