@@ -20,9 +20,6 @@ int validateIntSetRawValue(char *rawStr);
 
 int getIntSetSize(char **rawValue);
 
-//TODO: Need to be implemented
-char **getUniqueItems(char **rawValue);
-
 int strIn(char **str, const char *target);
 
 int *convertCharArrToIntArr(char **str);
@@ -46,6 +43,10 @@ int *convertIntSetArrToIntArr(struct IntSet *intSet, int size);
 void printList(int *list, int size);
 
 char *addBraces(char *result, int accumSize);
+
+int listIn(int *list, int listSize, int target);
+
+int *getUniqueItems(int *rawValue, int *size);
 
 PG_MODULE_MAGIC;
 
@@ -74,6 +75,7 @@ intset_in(PG_FUNCTION_ARGS) {
     tmpStr = removeBraces(tmpStr);
     removeSpaces(tmpStr);
     intlist = splitCharStr(tmpStr, &size);
+    intlist = getUniqueItems(intlist, &size);
     struct varlena *result = (struct varlena *) palloc((size + 1) * sizeof(struct IntSet) + 4);
     SET_VARSIZE(result, (size + 1) * sizeof(struct IntSet));
 
@@ -190,10 +192,6 @@ int getIntSetSize(char **rawValue) {
         iter++;
     }
     return size;
-}
-
-char **getUniqueItems(char **rawValue) {
-    return NULL;
 }
 
 int strIn(char **str, const char *target) {
@@ -357,4 +355,34 @@ void initEmptyCharPtr(char *str, int size) {
     for (i = 0; i < size; i++) {
         str[i] = '\0';
     }
+}
+
+int *getUniqueItems(int *rawValue, int *size) {
+    int *finalList = NULL, *tmpList = NULL;
+    int i = 0;
+    int newSize = 0;
+    for (i = 0; i < *size; i++) {
+        if (newSize == 0) {
+            tmpList = malloc(sizeof(int));
+            newSize++;
+            tmpList[0] = *(rawValue + i);
+        } else if (listIn(finalList, newSize, *(rawValue + i))) {
+            tmpList = realloc(finalList, (++newSize) * sizeof(int));
+            *(tmpList + newSize - 1) = *(rawValue + i);
+        }
+        finalList = tmpList;
+    }
+    *size = newSize;
+    return finalList;
+}
+
+int listIn(int *list, int listSize, int target) {
+    int *listHead = list;
+    int i = 0;
+    for (i = 0; i < listSize; i++) {
+        if (*(listHead + i) == target) {
+            return 0;
+        }
+    }
+    return 1;
 }
