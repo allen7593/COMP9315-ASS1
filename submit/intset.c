@@ -63,6 +63,8 @@ int *intset_intersection(int *isetA, int isetA_len, int *isetB, int isetB_len, i
 
 int *intset_difference(int *isetA, int isetA_len, int *isetB, int isetB_len, int *dif_len);
 
+int *intset_disjunction(int *isetA, int isetA_len, int *isetB, int isetB_len, int *dis_len);
+
 PG_MODULE_MAGIC;
 
 /*****************************************************************************
@@ -234,9 +236,46 @@ intset_diff(PG_FUNCTION_ARGS) {
     PG_RETURN_POINTER(result);
 }
 
+PG_FUNCTION_INFO_V1(intset_disj);
+
+Datum
+intset_disj(PG_FUNCTION_ARGS) {
+    struct varlena *left = PG_GETARG_VARLENA_P(0);
+    struct varlena *right = PG_GETARG_VARLENA_P(1);
+    int leftLen = VARSIZE(left) / sizeof(struct IntSet);
+    int rightLen = VARSIZE(right) / sizeof(struct IntSet);
+    IntSet *left_set = VARDATA(left);
+    IntSet *right_set = VARDATA(right);
+    int *leftSet = convertIntSetArrToIntArr(left_set, &leftLen);
+    int *rightSet = convertIntSetArrToIntArr(right_set, &rightLen);
+    int uni_len = 0;
+    int *resultSet = intset_disjunction(leftSet, leftLen, right_set, rightLen, &uni_len);
+    qsort(resultSet, uni_len, sizeof(int), compare);
+
+    struct varlena *result = (struct varlena *) palloc((uni_len + 1) * sizeof(struct IntSet) + 4);
+    SET_VARSIZE(result, (uni_len + 1) * sizeof(struct IntSet));
+    int i = 0;
+    IntSet *a = (IntSet *) ((int32_t) result + 4);
+    for (i = 0; i < uni_len; i++, resultSet++) {
+        a[i].val = *resultSet;
+    }
+    a[uni_len].val = 0;
+
+    PG_RETURN_POINTER(result);
+}
+
 /**
  * Function Implementation
  **/
+int *intset_disjunction(int *isetA, int isetA_len, int *isetB, int isetB_len, int *dis_len) {  //A!!B
+    int *intarray_dis = NULL, count, *ab, ablen, *ba, balen;
+    ab = intset_difference(isetA, isetA_len, isetB, isetB_len, &ablen);
+    ba = intset_difference(isetB, isetB_len, isetA, isetA_len, &balen);
+    intarray_dis = intset_union_impl(ab, ablen, ba, balen, &count);
+    *dis_len = count;
+    return intarray_dis;
+}
+
 int *intset_difference(int *isetA, int isetA_len, int *isetB, int isetB_len, int *dif_len) {  //A-B
     if (isetA_len == 0) {  //void set
         *dif_len = 0;
