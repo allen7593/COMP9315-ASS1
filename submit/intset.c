@@ -61,6 +61,8 @@ int compare(const void *a, const void *b);
 
 int *intset_intersection(int *isetA, int isetA_len, int *isetB, int isetB_len, int *inj_len);
 
+int *intset_difference(int *isetA, int isetA_len, int *isetB, int isetB_len, int *dif_len);
+
 PG_MODULE_MAGIC;
 
 /*****************************************************************************
@@ -204,9 +206,68 @@ intset_inter(PG_FUNCTION_ARGS) {
     PG_RETURN_POINTER(result);
 }
 
+PG_FUNCTION_INFO_V1(intset_diff);
+
+Datum
+intset_diff(PG_FUNCTION_ARGS) {
+    struct varlena *left = PG_GETARG_VARLENA_P(0);
+    struct varlena *right = PG_GETARG_VARLENA_P(1);
+    int leftLen = VARSIZE(left) / sizeof(struct IntSet);
+    int rightLen = VARSIZE(right) / sizeof(struct IntSet);
+    IntSet *left_set = VARDATA(left);
+    IntSet *right_set = VARDATA(right);
+    int *leftSet = convertIntSetArrToIntArr(left_set, &leftLen);
+    int *rightSet = convertIntSetArrToIntArr(right_set, &rightLen);
+    int uni_len = 0;
+    int *resultSet = intset_difference(leftSet, leftLen, right_set, rightLen, &uni_len);
+    qsort(resultSet, uni_len, sizeof(int), compare);
+
+    struct varlena *result = (struct varlena *) palloc((uni_len + 1) * sizeof(struct IntSet) + 4);
+    SET_VARSIZE(result, (uni_len + 1) * sizeof(struct IntSet));
+    int i = 0;
+    IntSet *a = (IntSet *) ((int32_t) result + 4);
+    for (i = 0; i < uni_len; i++, resultSet++) {
+        a[i].val = *resultSet;
+    }
+    a[uni_len].val = 0;
+
+    PG_RETURN_POINTER(result);
+}
+
 /**
  * Function Implementation
  **/
+int *intset_difference(int *isetA, int isetA_len, int *isetB, int isetB_len, int *dif_len) {  //A-B
+    if (isetA_len == 0) {  //void set
+        *dif_len = 0;
+        return NULL;
+    }
+
+    int *intarray_inj, inj_len;
+    intarray_inj = intset_intersection(isetA, isetA_len, isetB, isetB_len, &inj_len);
+    if (inj_len == 0) {
+        *dif_len = isetA_len;
+        return isetA;  //no intersection
+    }
+
+    int i, count = 0, *intarray_dif = NULL, *tmp_dif = NULL;
+    for (i = 0; i < isetA_len; i++) {
+        if (belong(isetA[i], intarray_inj, inj_len) == 0) {
+            count++;
+            if (count == 1) {
+                tmp_dif = malloc(sizeof(int));
+            } else {
+                tmp_dif = realloc(tmp_dif, count * sizeof(int));
+            }
+            intarray_dif = tmp_dif;
+            intarray_dif[count - 1] = isetA[i];
+        }
+    }
+
+    *dif_len = count;
+    return intarray_dif;
+}
+
 int *intset_intersection(int *isetA, int isetA_len, int *isetB, int isetB_len, int *inj_len) {  //A&&B
     if (isetA_len == 0 || isetB_len == 0) {
         *inj_len = 0;
