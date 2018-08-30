@@ -59,6 +59,8 @@ int *intset_union_impl(int *isetA, int isetA_len, int *isetB, int isetB_len, int
 
 int compare(const void *a, const void *b);
 
+int *intset_intersection(int *isetA, int isetA_len, int *isetB, int isetB_len, int *inj_len);
+
 PG_MODULE_MAGIC;
 
 /*****************************************************************************
@@ -174,9 +176,72 @@ intset_size(PG_FUNCTION_ARGS) {
     PG_RETURN_INT32(rightLen - 1);
 }
 
+PG_FUNCTION_INFO_V1(intset_inter);
+
+Datum
+intset_inter(PG_FUNCTION_ARGS) {
+    struct varlena *left = PG_GETARG_VARLENA_P(0);
+    struct varlena *right = PG_GETARG_VARLENA_P(1);
+    int leftLen = VARSIZE(left) / sizeof(struct IntSet);
+    int rightLen = VARSIZE(right) / sizeof(struct IntSet);
+    IntSet *left_set = VARDATA(left);
+    IntSet *right_set = VARDATA(right);
+    int *leftSet = convertIntSetArrToIntArr(left_set, &leftLen);
+    int *rightSet = convertIntSetArrToIntArr(right_set, &rightLen);
+    int uni_len = 0;
+    int *resultSet = intset_intersection(leftSet, leftLen, right_set, rightLen, &uni_len);
+    qsort(resultSet, uni_len, sizeof(int), compare);
+
+    struct varlena *result = (struct varlena *) palloc((uni_len + 1) * sizeof(struct IntSet) + 4);
+    SET_VARSIZE(result, (uni_len + 1) * sizeof(struct IntSet));
+    int i = 0;
+    IntSet *a = (IntSet *) ((int32_t) result + 4);
+    for (i = 0; i < uni_len; i++, resultSet++) {
+        a[i].val = *resultSet;
+    }
+    a[uni_len].val = 0;
+
+    PG_RETURN_POINTER(result);
+}
+
 /**
  * Function Implementation
  **/
+int *intset_intersection(int *isetA, int isetA_len, int *isetB, int isetB_len, int *inj_len) {  //A&&B
+    if (isetA_len == 0 || isetB_len == 0) {
+        *inj_len = 0;
+        return NULL;  //void set intersection with any set
+    }
+    int *intarray_inj = NULL, *tmp_inj = NULL, *maxarr = NULL, *minarr = NULL;
+    int maxlen, minlen, i, count = 0;
+    if (isetA_len < isetB_len) {
+        minarr = isetA;
+        maxarr = isetB;
+        minlen = isetA_len;
+        maxlen = isetB_len;
+    } else {
+        minarr = isetB;
+        maxarr = isetA;
+        minlen = isetB_len;
+        maxlen = isetA_len;
+    }
+    for (i = 0; i < minlen; i++) {
+        if (belong(minarr[i], maxarr, maxlen) == 1) {
+            count++;
+            if (count == 1) {
+                tmp_inj = palloc(sizeof(int));
+            } else {
+                tmp_inj = repalloc(tmp_inj, count * sizeof(int));
+            }
+            intarray_inj = tmp_inj;
+            intarray_inj[count - 1] = minarr[i];
+        }
+    }
+
+    *inj_len = count;
+    return intarray_inj;
+}
+
 int *intset_union_impl(int *isetA, int isetA_len, int *isetB, int isetB_len, int *uni_len) {  //A||B
     if (isetA_len == 0) {
         if (isetB_len == 0) {
@@ -275,6 +340,9 @@ void printList(int *list, int size) {
 
 int *convertIntSetArrToIntArr(struct IntSet *intSet, int *size) {
     (*size)--;
+    if (*size == 0) {
+        return NULL;
+    }
     int *intArr = palloc((*size) * sizeof(int));
     int i = 0;
     for (i = 0; i < *size; i++) {
@@ -436,7 +504,11 @@ char *convertIntArrToCharArr(int *intset, int size) {
         memToSet = 0;
     }
     removeSpaces(finalResult);
-    finalResult = addBraces(finalResult, strlen(finalResult));
+    if(finalResult == NULL) {
+        finalResult = addBraces(finalResult, 0);
+    } else{
+        finalResult = addBraces(finalResult, strlen(finalResult));
+    }
     return finalResult;
 }
 
@@ -445,7 +517,9 @@ char *addBraces(char *result, int accumSize) {
     char *newStr = malloc(newSize);
     int i = 0;
     strcpy(newStr, "{");
-    newStr = strcat(newStr, result);
+    if (result != NULL) {
+        newStr = strcat(newStr, result);
+    }
     strcat(newStr, "}");
     return newStr;
 }
@@ -467,9 +541,11 @@ int countDigit(int num) {
 }
 
 void removeSpaces(char *str) {
+    if (str == NULL) {
+        return;
+    }
     int size = strlen(str);
     int spaceNum = countSpace(str);
-    // TODO: use pmalloc instaad
     char *a = palloc(size - spaceNum + 1 * sizeof(char));
     char *i = a;
     char *j = str;

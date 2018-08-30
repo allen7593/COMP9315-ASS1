@@ -41,6 +41,9 @@ CREATE FUNCTION intset_union(intset, intset) RETURNS intset
 CREATE FUNCTION intset_size(intset) RETURNS int4
    AS '_OBJWD_/intset' LANGUAGE C IMMUTABLE STRICT;
 
+CREATE FUNCTION intset_inter(intset, intset) RETURNS intset
+   AS '_OBJWD_/intset' LANGUAGE C IMMUTABLE STRICT;
+
 CREATE OPERATOR @> (
    leftarg = intset,
    rightarg = intset,
@@ -61,6 +64,13 @@ CREATE OPERATOR @ (
    procedure = intset_size
 );
 
+CREATE OPERATOR && (
+   leftarg = intset,
+   rightarg = intset,
+   procedure = intset_inter,
+   commutator = &&
+);
+
 select a.*, b.* from mySets a, mySets b
 where (b.iset @> a.iset) and a.id != b.id;
 update mySets set iset = iset || '{5,6,7,8}' where id = 4;
@@ -68,6 +78,8 @@ select * from mySets where id=4;
 select a.*, b.* from mySets a, mySets b
 where (b.iset @> a.iset) and a.id != b.id;
 select id, iset, (@iset) as card from mySets order by id;
+select a.iset, b.iset, a.iset && b.iset
+from mySets a, mySets b where a.id < b.id;
 
 DROP TABLE mySets;
 DROP TYPE intset CASCADE;
