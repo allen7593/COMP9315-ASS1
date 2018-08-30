@@ -16,6 +16,9 @@ typedef struct IntSet {
     int val;
 } IntSet;
 
+/**
+ * Function Declaration
+ */
 int validateIntSetRawValue(char *rawStr);
 
 int getIntSetSize(char **rawValue);
@@ -47,6 +50,10 @@ char *addBraces(char *result, int accumSize);
 int listIn(int *list, int listSize, int target);
 
 int *getUniqueItems(int *rawValue, int *size);
+
+int belong(int i, int *iset, int iset_len);
+
+int contain(int *isetA, int isetA_len, int *isetB, int isetB_len);
 
 PG_MODULE_MAGIC;
 
@@ -102,6 +109,62 @@ intset_out(PG_FUNCTION_ARGS) {
 
     char *charlist = convertIntArrToCharArr(intArr, n);
     PG_RETURN_CSTRING(charlist);
+}
+
+/**
+ * Operators
+ */
+
+PG_FUNCTION_INFO_V1(intset_contain);
+
+Datum
+intset_contain(PG_FUNCTION_ARGS) {
+    struct varlena *left = PG_GETARG_VARLENA_P(0);
+    struct varlena *right = PG_GETARG_VARLENA_P(1);
+    int leftLen = VARSIZE(left) / sizeof(struct IntSet);
+    int rightLen = VARSIZE(right) / sizeof(struct IntSet);
+    IntSet *left_set = VARDATA(left);
+    IntSet *right_set = VARDATA(right);
+    int *leftSet = convertIntSetArrToIntArr(left_set, &leftLen);
+    int *rightSet = convertIntSetArrToIntArr(right_set, &rightLen);
+
+    PG_RETURN_BOOL(contain(leftSet, leftLen, rightSet, rightLen) == 1);
+}
+
+/**
+ * Function Implementation
+ **/
+
+int belong(int i, int *iset, int iset_len) {  // belong(int, int_set, int_set_length)
+    int x;
+    if (iset_len == 0) {
+        return 0;  // iset is void set
+    }
+    for (x = 0; x < iset_len; x++) {
+        if (i == iset[x]) {
+            return 1;  // int in int_set
+        }
+    }
+    return 0;  // int not in int_set
+}
+
+int contain(int *isetA, int isetA_len, int *isetB, int isetB_len) { //isetB contains isetA = A @> B
+    if (isetA_len == 0) {
+        if (isetB_len == 0) {
+            return 0;  //void set cannot contain void set
+        }
+        return 1;  //any set contains void set
+    }
+    if (isetA_len > isetB_len) {
+        return 0;  //int_setB cannot contain int_setA
+    }
+    int ia;
+    for (ia = 0; ia < isetA_len; ia++) {
+        if (belong(isetA[ia], isetB, isetB_len) != 1) {
+            return 0;  //isetB cannot contain int_setA
+        }
+    }
+    return 1; //isetB contains isetA = A @> B
 }
 
 void printList(int *list, int size) {
