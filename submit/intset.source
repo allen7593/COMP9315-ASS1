@@ -35,14 +35,39 @@ select * from mySets;
 CREATE FUNCTION intset_contain(intset, intset) RETURNS bool
    AS '_OBJWD_/intset' LANGUAGE C IMMUTABLE STRICT;
 
+CREATE FUNCTION intset_union(intset, intset) RETURNS intset
+   AS '_OBJWD_/intset' LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION intset_size(intset) RETURNS int4
+   AS '_OBJWD_/intset' LANGUAGE C IMMUTABLE STRICT;
+
 CREATE OPERATOR @> (
-   leftarg = intset, rightarg = intset, procedure = intset_contain,
+   leftarg = intset,
+   rightarg = intset,
+   procedure = intset_contain,
    commutator = @>,
    restrict = scalarltsel, join = scalarltjoinsel
 );
 
+CREATE OPERATOR || (
+   leftarg = intset,
+   rightarg = intset,
+   procedure = intset_union,
+   commutator = ||
+);
+
+CREATE OPERATOR @ (
+   rightarg = intset,
+   procedure = intset_size
+);
+
 select a.*, b.* from mySets a, mySets b
 where (b.iset @> a.iset) and a.id != b.id;
+update mySets set iset = iset || '{5,6,7,8}' where id = 4;
+select * from mySets where id=4;
+select a.*, b.* from mySets a, mySets b
+where (b.iset @> a.iset) and a.id != b.id;
+select id, iset, (@iset) as card from mySets order by id;
 
 DROP TABLE mySets;
 DROP TYPE intset CASCADE;

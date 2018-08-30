@@ -87,6 +87,7 @@ intset_in(PG_FUNCTION_ARGS) {
     removeSpaces(tmpStr);
     intlist = splitCharStr(tmpStr, &size);
     intlist = getUniqueItems(intlist, &size);
+    qsort(intlist, size, sizeof(int), compare);
     struct varlena *result = (struct varlena *) palloc((size + 1) * sizeof(struct IntSet) + 4);
     SET_VARSIZE(result, (size + 1) * sizeof(struct IntSet));
 
@@ -161,6 +162,16 @@ intset_union(PG_FUNCTION_ARGS) {
     a[uni_len].val = 0;
 
     PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(intset_size);
+
+Datum
+intset_size(PG_FUNCTION_ARGS) {
+    struct varlena *right = PG_GETARG_VARLENA_P(0);
+    int rightLen = VARSIZE(right) / sizeof(struct IntSet);
+
+    PG_RETURN_INT32(rightLen - 1);
 }
 
 /**
