@@ -55,6 +55,10 @@ int belong(int i, int *iset, int iset_len);
 
 int contain(int *isetA, int isetA_len, int *isetB, int isetB_len);
 
+int *intset_union_impl(int *isetA, int isetA_len, int *isetB, int isetB_len, int *uni_len);
+
+int compare(const void *a, const void *b);
+
 PG_MODULE_MAGIC;
 
 /*****************************************************************************
@@ -131,9 +135,92 @@ intset_contain(PG_FUNCTION_ARGS) {
     PG_RETURN_BOOL(contain(leftSet, leftLen, rightSet, rightLen) == 1);
 }
 
+PG_FUNCTION_INFO_V1(intset_union);
+
+Datum
+intset_union(PG_FUNCTION_ARGS) {
+    struct varlena *left = PG_GETARG_VARLENA_P(0);
+    struct varlena *right = PG_GETARG_VARLENA_P(1);
+    int leftLen = VARSIZE(left) / sizeof(struct IntSet);
+    int rightLen = VARSIZE(right) / sizeof(struct IntSet);
+    IntSet *left_set = VARDATA(left);
+    IntSet *right_set = VARDATA(right);
+    int *leftSet = convertIntSetArrToIntArr(left_set, &leftLen);
+    int *rightSet = convertIntSetArrToIntArr(right_set, &rightLen);
+    int uni_len = 0;
+    int *resultSet = intset_union_impl(leftSet, leftLen, right_set, rightLen, &uni_len);
+    qsort(resultSet, uni_len, sizeof(int), compare);
+
+    struct varlena *result = (struct varlena *) palloc((uni_len + 1) * sizeof(struct IntSet) + 4);
+    SET_VARSIZE(result, (uni_len + 1) * sizeof(struct IntSet));
+    int i = 0;
+    IntSet *a = (IntSet *) ((int32_t) result + 4);
+    for (i = 0; i < uni_len; i++, resultSet++) {
+        a[i].val = *resultSet;
+    }
+    a[uni_len].val = 0;
+
+    PG_RETURN_POINTER(result);
+}
+
 /**
  * Function Implementation
  **/
+int *intset_union_impl(int *isetA, int isetA_len, int *isetB, int isetB_len, int *uni_len) {  //A||B
+    if (isetA_len == 0) {
+        if (isetB_len == 0) {
+            *uni_len = 0;
+            return NULL;  //void set union void set
+        }
+        *uni_len = isetB_len;
+        return isetB;  //void set union isetB
+    }
+    if (isetB_len == 0) {
+        *uni_len = isetA_len;
+        return isetA;  //isetA union void set
+    }
+
+    int *intarray_uni = NULL, *tmp_uni = NULL, *maxarr = NULL, *minarr = NULL;
+    int maxlen, minlen, i, count = 0;
+    if (isetA_len < isetB_len) {
+        if (contain(isetA, isetA_len, isetB, isetB_len) == 1) {
+            *uni_len = isetB_len;
+            return isetB;   // isetB contains isetA
+        }
+        minarr = isetA;
+        maxarr = isetB;
+        minlen = isetA_len;
+        maxlen = isetB_len;
+    } else {
+        if (contain(isetB, isetB_len, isetA, isetA_len) == 1) {
+            *uni_len = isetA_len;
+            return isetA;   // isetA contains isetB
+        }
+        minarr = isetB;
+        maxarr = isetA;
+        minlen = isetB_len;
+        maxlen = isetA_len;
+    }
+
+    tmp_uni = malloc(sizeof(int) * maxlen);
+    intarray_uni = tmp_uni;
+    memcpy(intarray_uni, maxarr, sizeof(int) * maxlen);
+
+    for (i = 0; i < minlen; i++) {
+        if (belong(minarr[i], intarray_uni, maxlen + count) == 0) {
+            count++;
+            tmp_uni = realloc(tmp_uni, (maxlen + count) * sizeof(int));
+            intarray_uni = tmp_uni;
+            intarray_uni[maxlen + count - 1] = minarr[i];
+        }
+    }
+    *uni_len = maxlen + count;
+    return intarray_uni;
+}
+
+int compare(const void *a, const void *b) {
+    return *(int *) a < *(int *) b ? -1 : 1;
+}
 
 int belong(int i, int *iset, int iset_len) {  // belong(int, int_set, int_set_length)
     int x;
