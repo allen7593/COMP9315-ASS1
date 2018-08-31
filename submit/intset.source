@@ -1,37 +1,35 @@
-CREATE TYPE intset;
-
+-- Intset Input
 CREATE FUNCTION intset_in(cstring)
    RETURNS intset
    AS '_OBJWD_/intset'
    LANGUAGE C IMMUTABLE STRICT;
 
--- the output function 'complex_out' takes the internal representation and
--- converts it into the textual representation.
-
+-- Intset Output
 CREATE FUNCTION intset_out(intset)
    RETURNS cstring
    AS '_OBJWD_/intset'
    LANGUAGE C IMMUTABLE STRICT;
 
-
--- now, we can create the type. The internallength specifies the size of the
--- memory block required to hold the type (we need two 8-byte doubles).
-
+-- Type Define
 CREATE TYPE intset (
    internallength = variable,
    input = intset_in,
    output = intset_out
 );
 
+-- Create Test Table
 create table mySets (id integer primary key, iset intSet);
 
+-- Insert Test Data
 insert into mySets values (1, '{1,2,3}');
 insert into mySets values (2, '{1,3,1,3,1}');
 insert into mySets values (3, '{3,4,5}');
 insert into mySets values (4, '{4,5}');
 
+-- Display Test Data
 select * from mySets;
 
+-- Declare Operator functions
 CREATE FUNCTION intset_contain(intset, intset) RETURNS bool
    AS '_OBJWD_/intset' LANGUAGE C IMMUTABLE STRICT;
 
@@ -50,6 +48,11 @@ CREATE FUNCTION intset_diff(intset, intset) RETURNS intset
 CREATE FUNCTION intset_disj(intset, intset) RETURNS intset
    AS '_OBJWD_/intset' LANGUAGE C IMMUTABLE STRICT;
 
+CREATE FUNCTION intset_belong(int4, intset) RETURNS bool
+   AS '_OBJWD_/intset' LANGUAGE C IMMUTABLE STRICT;
+
+
+-- Define Operator
 CREATE OPERATOR @> (
    leftarg = intset,
    rightarg = intset,
@@ -91,24 +94,49 @@ CREATE OPERATOR !! (
    commutator = !!
 );
 
+CREATE OPERATOR <@ (
+   leftarg = int4,
+   rightarg = intset,
+   procedure = intset_belong,
+   commutator = <@
+);
+
+-- Test Cases
+-- Test operator @>
 select a.*, b.* from mySets a, mySets b
 where (b.iset @> a.iset) and a.id != b.id;
+
+-- Test operator ||
 update mySets set iset = iset || '{5,6,7,8}' where id = 4;
 select * from mySets where id=4;
 select a.*, b.* from mySets a, mySets b
 where (b.iset @> a.iset) and a.id != b.id;
+
+-- Test operator @iset
 select id, iset, (@iset) as card from mySets order by id;
+
+-- Test operator &&
 select a.iset, b.iset, a.iset && b.iset
 from mySets a, mySets b where a.id < b.id;
 delete from mySets where iset @> '{1,2,3,4,5,6}';
 select * from mySets;
+
+-- Insert Test Data
 insert into mySets values (1, '{1,2,3}');
 insert into mySets values (2, '{1,3,1,3,1}');
 insert into mySets values (3, '{3,4,5}');
+
+-- Test operator -
 select (a.iset - b.iset) as result from mySets a, mySets b
 where (b.iset @> a.iset) and a.id != b.id;
+
+-- Test operator !!
 select (a.iset !! b.iset) as result from mySets a, mySets b
 where a.id = '1' and b.id = '3';
 
+-- Test operator <@
+select * from mysets where 3 <@ iset;
+
+-- Drop all
 DROP TABLE mySets;
 DROP TYPE intset CASCADE;

@@ -264,6 +264,23 @@ intset_disj(PG_FUNCTION_ARGS) {
     PG_RETURN_POINTER(result);
 }
 
+PG_FUNCTION_INFO_V1(intset_belong);
+
+Datum
+intset_belong(PG_FUNCTION_ARGS) {
+    int32 left = PG_GETARG_INT32(0);
+    struct varlena *right = PG_GETARG_VARLENA_P(1);
+
+    int rightLen = VARSIZE(right) / sizeof(struct IntSet);
+
+    IntSet *right_set = VARDATA(right);
+
+    int *rightSet = convertIntSetArrToIntArr(right_set, &rightLen);
+
+
+    PG_RETURN_BOOL(belong(left, rightSet, rightLen) == 1);
+}
+
 /**
  * Function Implementation
  **/
