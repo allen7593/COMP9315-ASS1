@@ -303,7 +303,8 @@ intset_eq(PG_FUNCTION_ARGS) {
  * Function Implementation
  **/
 int intset_equal(int *isetA, int isetA_len, int *isetB, int isetB_len) {  //int_setA = int_setB
-    return contain(isetA, isetA_len, isetB, isetB_len) == 1 && contain(isetB, isetB_len, isetA, isetA_len) == 1;  //int_setA != int_setB
+    return contain(isetA, isetA_len, isetB, isetB_len) == 1 &&
+           contain(isetB, isetB_len, isetA, isetA_len) == 1;  //int_setA != int_setB
 }
 
 int *intset_disjunction(int *isetA, int isetA_len, int *isetB, int isetB_len, int *dis_len) {  //A!!B
@@ -495,6 +496,7 @@ int *splitCharStr(char *str, int *size) {
     char *p = NULL;
     int *intList = NULL;
     int *tmpList = NULL;
+    int64_t testVal = 0;
     p = strtok(iter, ",");
     *size = 0;
     while (p) {
@@ -505,7 +507,13 @@ int *splitCharStr(char *str, int *size) {
             tmpList = repalloc(intList, sizeof(int) * (*size));
         }
         intList = tmpList;
-        *(intList + *size - 1) = atoi(p);
+        testVal = atoll(p);
+        if (testVal > INT32_MAX || testVal < INT32_MIN) {
+            ereport(ERROR,
+                    (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
+                            errmsg("Int Value Out of range: range should within %i - %i", INT32_MIN, INT32_MAX)));
+        }
+        *(intList + *size - 1) = (int) testVal;
         p = strtok(NULL, ",");
     }
     return intList;
@@ -533,7 +541,7 @@ int validateIntSetRawValue(char *rawStr) {
     newStr = removeBraces(rawStr);
     iter = newStr;
     while (*iter != '\0' && valid == 0) {
-        if(!isspace(*iter)) {
+        if (!isspace(*iter)) {
             lastKnownChar = *iter;
         }
         if (isalpha((int) *iter)) { // If current char is not alphabet
@@ -556,7 +564,7 @@ int validateIntSetRawValue(char *rawStr) {
         }
         iter++;
     }
-    if(valid == 0 && !isdigit(lastKnownChar)){
+    if (valid == 0 && !isdigit(lastKnownChar)) {
         valid = -1;
     }
     return valid;

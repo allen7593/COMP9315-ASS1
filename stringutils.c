@@ -46,7 +46,7 @@ int validateIntSetRawValue(char *rawStr) {
     newStr = removeBraces(rawStr);
     iter = newStr;
     while (*iter != '\0' && valid == 0) {
-        if(!isspace(*iter)) {
+        if (!isspace(*iter)) {
             lastKnownChar = *iter;
         }
         if (isalpha((int) *iter)) { // If current char is not alphabet
@@ -69,7 +69,7 @@ int validateIntSetRawValue(char *rawStr) {
         }
         iter++;
     }
-    if(valid == 0 && !isdigit(lastKnownChar)){
+    if (valid == 0 && !isdigit(lastKnownChar)) {
         valid = -1;
     }
     return valid;
