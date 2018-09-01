@@ -24,6 +24,8 @@ insert into mySets values (9,'{1,/n}');
 insert into mySets values (9,'{1,2}');
 insert into mySets values (9,'[1,2]');
 insert into mySets values (9,'{1*5,2}');
+insert into mySets values (9,'{5555555555}');
+insert into mySets values (9,'{-5555555555}');
 
 /*operation*/
 select id, iset, (@iset) as card from mySets order by id;
