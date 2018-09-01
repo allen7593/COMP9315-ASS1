@@ -19,7 +19,7 @@ insert into mySets values (9, '{1,}');
 insert into mySets values (9,'{1,,5}');
 insert into mySets values (9,'{1,/}');
 insert into mySets values (9,'{1,/n}');
-insert into mySets values (9,‘{1,2}’);
+insert into mySets values (9,'{1,2}'');
 insert into mySets values (9,'[1,2]');
 insert into mySets values (9,'{1*5,2}');
 
@@ -40,22 +40,14 @@ where a.id < b.id;
 select a.*, b.* from mySets a, mySets b
 where (a.iset = b.iset);
 
-select a.*, b.* from mySets a, mySets b
-where (a.iset && b.iset);
-
 select a.*, b.*, a.iset && b.iset from mySets a, mySets b
 where a.id < b.id;
 
-select a.*, b.* from mySets a, mySets b
-where (a.iset || b.iset);
+select a.*, b.*, a.iset || b.iset from mySets a, mySets b
+where a.id < b.id;
 
-select a.*, b.* from mySets a, mySets b
-where (b.iset - a.iset);
+select a.*, b.*, a.iset - b.iset from mySets a, mySets b
+where a.id < b.id;
 
-select a.*, b.* from mySets a, mySets b
-where (a.iset !! b.iset);
-
-select a.*, b.* from mySets a, mySets b
-where (a.iset - b.iset);
-
-
+select a.*, b.*, a.iset !! b.iset from mySets a, mySets b
+where a.id < b.id;
