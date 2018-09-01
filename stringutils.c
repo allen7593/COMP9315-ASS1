@@ -8,6 +8,32 @@
 #include <stdio.h>
 #include "stringutils.h"
 
+int intset_binary_search(int *list, int size, int target) {
+    if (size == 0) return 0; // Not Found
+    int low = 0;
+    int high = size - 1;
+    int mid = (low + high) >> 1;
+
+    while (1) {
+        if (high - low == 0 && *(list + high) != target) {
+            return 0; // Not Found
+        } else if (high - low == 1) {
+            if(*(list + low) == target || *(list + high) == target) {
+                return 1;
+            }
+            return 0;
+        }
+        if (*(list + mid) == target) {
+            return 1; // Found
+        } else if (*(list + mid) > target) {
+            high = mid;
+        } else if (*(list + mid) < target) {
+            low = mid;
+        }
+        mid = (low + high) >> 1;
+    }
+}
+
 int *splitCharStr(char *str, int *size) {
     char *iter = str;
     char *p = NULL;

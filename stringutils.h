@@ -32,4 +32,6 @@ char *removeBraces(char *str);
 
 void initEmptyCharPtr(char *str, int size);
 
+int intset_binary_search(int *list, int size, int target);
+
 #endif //STRINGUTILS_H

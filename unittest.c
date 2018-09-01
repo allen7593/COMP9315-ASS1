@@ -24,16 +24,51 @@ void testIntegrate();
 
 void testUniqueItem();
 
+void b_search_test();
+
 int main() {
-    testValidateIntSetRawValueValid();
-    testValidateIntSetRawValueInvalid();
+//    testValidateIntSetRawValueValid();
+//    testValidateIntSetRawValueInvalid();
 //    testSplitStringAndSize();
 //    testStrIn();
 //    testCountDigits();
 //    testConvertIntArrToCharArr();
 //    testIntegrate();
 //    testUniqueItem();
+    b_search_test();
     return 0;
+}
+
+void b_search_test() {
+    int test1[] = {1, 2, 3, 4, 5, 6};
+    int test2[] = {1,2,3};
+    int test3[] = {0, -22, 333, 4444, 5555, 666666};
+    int test4[] = {0, -22, 333, 4444, 5555, 666666, 7777777};
+    int test5[] = {};
+    int *testSet;
+    int result = 0;
+    int size = 0;
+
+    testSet = test1;
+    size = 6;
+    result = intset_binary_search(testSet, size, 3);
+    if(result == 0) {
+        printf("Wrong 1");
+    }
+    result = intset_binary_search(testSet, size, 7);
+    if(result == 1) {
+        printf("Wrong 2");
+    }
+    testSet = test2;
+    size = 3;
+    result = intset_binary_search(testSet, size, 3);
+    if(result == 0) {
+        printf("Wrong 3");
+    }
+    result = intset_binary_search(testSet, size, 7);
+    if(result == 1) {
+        printf("Wrong 4");
+    }
 }
 
 void testSplitStringAndSize() {

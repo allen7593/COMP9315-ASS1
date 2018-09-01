@@ -67,6 +67,8 @@ int *intset_disjunction(int *isetA, int isetA_len, int *isetB, int isetB_len, in
 
 int intset_equal(int *isetA, int isetA_len, int *isetB, int isetB_len);
 
+int intset_binary_search(int *list, int size, int target);
+
 PG_MODULE_MAGIC;
 
 /*****************************************************************************
@@ -302,6 +304,32 @@ intset_eq(PG_FUNCTION_ARGS) {
 /**
  * Function Implementation
  **/
+int intset_binary_search(int *list, int size, int target) {
+    if (size == 0) return 0; // Not Found
+    int low = 0;
+    int high = size - 1;
+    int mid = (low + high) >> 1;
+
+    while (1) {
+        if (high - low == 0 && *(list + high) != target) {
+            return 0; // Not Found
+        } else if (high - low == 1) {
+            if(*(list + low) == target || *(list + high) == target) {
+                return 1;
+            }
+            return 0;
+        }
+        if (*(list + mid) == target) {
+            return 1; // Found
+        } else if (*(list + mid) > target) {
+            high = mid;
+        } else if (*(list + mid) < target) {
+            low = mid;
+        }
+        mid = (low + high) >> 1;
+    }
+}
+
 int intset_equal(int *isetA, int isetA_len, int *isetB, int isetB_len) {  //int_setA = int_setB
     return contain(isetA, isetA_len, isetB, isetB_len) == 1 &&
            contain(isetB, isetB_len, isetA, isetA_len) == 1;  //int_setA != int_setB
@@ -439,16 +467,7 @@ int compare(const void *a, const void *b) {
 }
 
 int belong(int i, int *iset, int iset_len) {  // belong(int, int_set, int_set_length)
-    int x;
-    if (iset_len == 0) {
-        return 0;  // iset is void set
-    }
-    for (x = 0; x < iset_len; x++) {
-        if (i == iset[x]) {
-            return 1;  // int in int_set
-        }
-    }
-    return 0;  // int not in int_set
+    return intset_binary_search(iset, iset_len, i);
 }
 
 int contain(int *isetA, int isetA_len, int *isetB, int isetB_len) { //isetB contains isetA = A @> B
