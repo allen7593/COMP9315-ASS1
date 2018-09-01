@@ -51,6 +51,8 @@ CREATE FUNCTION intset_disj(intset, intset) RETURNS intset
 CREATE FUNCTION intset_belong(int4, intset) RETURNS bool
    AS '_OBJWD_/intset' LANGUAGE C IMMUTABLE STRICT;
 
+CREATE FUNCTION intset_eq(intset, intset) RETURNS bool
+   AS '_OBJWD_/intset' LANGUAGE C IMMUTABLE STRICT;
 
 -- Define Operator
 CREATE OPERATOR @> (
@@ -101,6 +103,14 @@ CREATE OPERATOR <@ (
    commutator = <@
 );
 
+CREATE OPERATOR = (
+   leftarg = intset,
+   rightarg = intset,
+   procedure = intset_eq,
+   commutator = =,
+   negator = !=
+);
+
 -- Test Cases
 -- Test operator @>
 select a.*, b.* from mySets a, mySets b
@@ -136,6 +146,12 @@ where a.id = '1' and b.id = '3';
 
 -- Test operator <@
 select * from mysets where 3 <@ iset;
+
+--Test Operator =
+insert into mySets values (5, '{3,4,5}');
+select * from mysets order by id;
+
+select a.*, b.* from mysets a, mysets b where (a.iset = b.iset) and a.id != b.id;
 
 -- Drop all
 DROP TABLE mySets;

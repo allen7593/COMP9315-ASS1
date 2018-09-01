@@ -65,6 +65,8 @@ int *intset_difference(int *isetA, int isetA_len, int *isetB, int isetB_len, int
 
 int *intset_disjunction(int *isetA, int isetA_len, int *isetB, int isetB_len, int *dis_len);
 
+int intset_equal(int *isetA, int isetA_len, int *isetB, int isetB_len);
+
 PG_MODULE_MAGIC;
 
 /*****************************************************************************
@@ -155,7 +157,7 @@ intset_union(PG_FUNCTION_ARGS) {
     int *leftSet = convertIntSetArrToIntArr(left_set, &leftLen);
     int *rightSet = convertIntSetArrToIntArr(right_set, &rightLen);
     int uni_len = 0;
-    int *resultSet = intset_union_impl(leftSet, leftLen, right_set, rightLen, &uni_len);
+    int *resultSet = intset_union_impl(leftSet, leftLen, rightSet, rightLen, &uni_len);
     qsort(resultSet, uni_len, sizeof(int), compare);
 
     struct varlena *result = (struct varlena *) palloc((uni_len + 1) * sizeof(struct IntSet) + 4);
@@ -193,7 +195,7 @@ intset_inter(PG_FUNCTION_ARGS) {
     int *leftSet = convertIntSetArrToIntArr(left_set, &leftLen);
     int *rightSet = convertIntSetArrToIntArr(right_set, &rightLen);
     int uni_len = 0;
-    int *resultSet = intset_intersection(leftSet, leftLen, right_set, rightLen, &uni_len);
+    int *resultSet = intset_intersection(leftSet, leftLen, rightSet, rightLen, &uni_len);
     qsort(resultSet, uni_len, sizeof(int), compare);
 
     struct varlena *result = (struct varlena *) palloc((uni_len + 1) * sizeof(struct IntSet) + 4);
@@ -221,7 +223,7 @@ intset_diff(PG_FUNCTION_ARGS) {
     int *leftSet = convertIntSetArrToIntArr(left_set, &leftLen);
     int *rightSet = convertIntSetArrToIntArr(right_set, &rightLen);
     int uni_len = 0;
-    int *resultSet = intset_difference(leftSet, leftLen, right_set, rightLen, &uni_len);
+    int *resultSet = intset_difference(leftSet, leftLen, rightSet, rightLen, &uni_len);
     qsort(resultSet, uni_len, sizeof(int), compare);
 
     struct varlena *result = (struct varlena *) palloc((uni_len + 1) * sizeof(struct IntSet) + 4);
@@ -249,7 +251,7 @@ intset_disj(PG_FUNCTION_ARGS) {
     int *leftSet = convertIntSetArrToIntArr(left_set, &leftLen);
     int *rightSet = convertIntSetArrToIntArr(right_set, &rightLen);
     int uni_len = 0;
-    int *resultSet = intset_disjunction(leftSet, leftLen, right_set, rightLen, &uni_len);
+    int *resultSet = intset_disjunction(leftSet, leftLen, rightSet, rightLen, &uni_len);
     qsort(resultSet, uni_len, sizeof(int), compare);
 
     struct varlena *result = (struct varlena *) palloc((uni_len + 1) * sizeof(struct IntSet) + 4);
@@ -281,9 +283,29 @@ intset_belong(PG_FUNCTION_ARGS) {
     PG_RETURN_BOOL(belong(left, rightSet, rightLen) == 1);
 }
 
+PG_FUNCTION_INFO_V1(intset_eq);
+
+Datum
+intset_eq(PG_FUNCTION_ARGS) {
+    struct varlena *left = PG_GETARG_VARLENA_P(0);
+    struct varlena *right = PG_GETARG_VARLENA_P(1);
+    int leftLen = VARSIZE(left) / sizeof(struct IntSet);
+    int rightLen = VARSIZE(right) / sizeof(struct IntSet);
+    IntSet *left_set = VARDATA(left);
+    IntSet *right_set = VARDATA(right);
+    int *leftSet = convertIntSetArrToIntArr(left_set, &leftLen);
+    int *rightSet = convertIntSetArrToIntArr(right_set, &rightLen);
+
+    PG_RETURN_BOOL(intset_equal(leftSet, leftLen, rightSet, rightLen) == 1);
+}
+
 /**
  * Function Implementation
  **/
+int intset_equal(int *isetA, int isetA_len, int *isetB, int isetB_len) {  //int_setA = int_setB
+    return contain(isetA, isetA_len, isetB, isetB_len) == 1 && contain(isetB, isetB_len, isetA, isetA_len) == 1;  //int_setA != int_setB
+}
+
 int *intset_disjunction(int *isetA, int isetA_len, int *isetB, int isetB_len, int *dis_len) {  //A!!B
     int *intarray_dis = NULL, count, *ab, ablen, *ba, balen;
     ab = intset_difference(isetA, isetA_len, isetB, isetB_len, &ablen);
@@ -621,9 +643,9 @@ char *convertIntArrToCharArr(int *intset, int size) {
         memToSet = 0;
     }
     removeSpaces(finalResult);
-    if(finalResult == NULL) {
+    if (finalResult == NULL) {
         finalResult = addBraces(finalResult, 0);
-    } else{
+    } else {
         finalResult = addBraces(finalResult, strlen(finalResult));
     }
     return finalResult;
