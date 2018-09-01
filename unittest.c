@@ -25,14 +25,14 @@ void testIntegrate();
 void testUniqueItem();
 
 int main() {
-//    testValidateIntSetRawValueValid();
-//    testValidateIntSetRawValueInvalid();
+    testValidateIntSetRawValueValid();
+    testValidateIntSetRawValueInvalid();
 //    testSplitStringAndSize();
 //    testStrIn();
 //    testCountDigits();
 //    testConvertIntArrToCharArr();
 //    testIntegrate();
-    testUniqueItem();
+//    testUniqueItem();
     return 0;
 }
 
@@ -153,6 +153,7 @@ void testValidateIntSetRawValueInvalid() {
     char testStr6[] = "{ 1 2 3 4 }";
     char testStr7[] = "{ 1, .2, 3, 4 }";
     char testStr8[] = "{ 1, ,,, 4 }";
+    char testStr9[] = "{ 1,}";
     if (validateIntSetRawValue(testStr1) != -1) {
         printf("String %s valid failed\n", testStr1);
     }
@@ -176,6 +177,9 @@ void testValidateIntSetRawValueInvalid() {
     }
     if (validateIntSetRawValue(testStr8) != -1) {
         printf("String %s valid failed\n", testStr8);
+    }
+    if (validateIntSetRawValue(testStr9) != -1) {
+        printf("String %s valid failed\n", testStr9);
     }
 }
 

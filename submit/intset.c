@@ -523,6 +523,7 @@ int validateIntSetRawValue(char *rawStr) {
     char *iter = rawStr;
     int valid = 0;
     int find = 0;
+    char lastKnownChar = '0';
     char *newStr = NULL;
     if (iter[0] == '{' && iter[strlen(rawStr) - 1] == '}') {
         valid = 0;
@@ -532,6 +533,9 @@ int validateIntSetRawValue(char *rawStr) {
     newStr = removeBraces(rawStr);
     iter = newStr;
     while (*iter != '\0' && valid == 0) {
+        if(!isspace(*iter)) {
+            lastKnownChar = *iter;
+        }
         if (isalpha((int) *iter)) { // If current char is not alphabet
             valid = -1;
         } else if (find == 0 && !(*iter == '-' || *iter == ' ' || *iter == ',' ||
@@ -545,10 +549,15 @@ int validateIntSetRawValue(char *rawStr) {
         } else if (find == 1 && *iter != ' ' &&
                    *iter != ',') { // When a digit found, current char is not space and comma
             valid = -1;
+        } else if (find == 0 && *iter == ',') { // current char is a comma, uncheck check flag
+            valid = -1;
         } else if (*iter == ',') { // current char is a comma, uncheck check flag
             find = 0;
         }
         iter++;
+    }
+    if(valid == 0 && !isdigit(lastKnownChar)){
+        valid = -1;
     }
     return valid;
 }
