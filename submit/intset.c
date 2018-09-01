@@ -362,9 +362,9 @@ int *intset_difference(int *isetA, int isetA_len, int *isetB, int isetB_len, int
         if (belong(isetA[i], intarray_inj, inj_len) == 0) {
             count++;
             if (count == 1) {
-                tmp_dif = malloc(sizeof(int));
+                tmp_dif = palloc(sizeof(int));
             } else {
-                tmp_dif = realloc(tmp_dif, count * sizeof(int));
+                tmp_dif = repalloc(tmp_dif, count * sizeof(int));
             }
             intarray_dif = tmp_dif;
             intarray_dif[count - 1] = isetA[i];
@@ -446,14 +446,14 @@ int *intset_union_impl(int *isetA, int isetA_len, int *isetB, int isetB_len, int
         maxlen = isetA_len;
     }
 
-    tmp_uni = malloc(sizeof(int) * maxlen);
+    tmp_uni = palloc(sizeof(int) * maxlen);
     intarray_uni = tmp_uni;
     memcpy(intarray_uni, maxarr, sizeof(int) * maxlen);
 
     for (i = 0; i < minlen; i++) {
         if (belong(minarr[i], intarray_uni, maxlen + count) == 0) {
             count++;
-            tmp_uni = realloc(tmp_uni, (maxlen + count) * sizeof(int));
+            tmp_uni = repalloc(tmp_uni, (maxlen + count) * sizeof(int));
             intarray_uni = tmp_uni;
             intarray_uni[maxlen + count - 1] = minarr[i];
         }
@@ -612,7 +612,6 @@ int strIn(char **str, const char *target) {
 
 int *convertCharArrToIntArr(char **str) {
     int size = getIntSetSize(str);
-    // TODO: use pmalloc instaad
     int *intset = palloc((size + 1) * sizeof(int));
     int *inthead = intset;
     char **head = str;
@@ -631,7 +630,7 @@ char *convertIntArrToCharArr(int *intset, int size) {
     for (i = 0; i < size; i++) {
         // Setup separator
         if (separator == NULL && i == 0) {
-            separator = malloc(1);
+            separator = palloc(1);
             strcpy(separator, " ");
         } else if (strcmp(separator, " ") == 0 && i > 0) {
             strcpy(separator, ",");
@@ -644,9 +643,9 @@ char *convertIntArrToCharArr(int *intset, int size) {
 
         // allocate mem for final result
         if (i == 0 && finalResult == NULL) {
-            tmpResult = malloc(accmSize * sizeof(char));
+            tmpResult = palloc(accmSize * sizeof(char));
         } else {
-            tmpResult = realloc(finalResult, accmSize * sizeof(char));
+            tmpResult = repalloc(finalResult, accmSize * sizeof(char));
         }
 
         // Allocation failed
@@ -658,9 +657,9 @@ char *convertIntArrToCharArr(int *intset, int size) {
         }
 
         // tmpNum
-        tmpNum = malloc(digits * sizeof(char));
+        tmpNum = palloc(digits * sizeof(char));
         // midStr
-        midStr = malloc(memToSet * sizeof(char));
+        midStr = palloc(memToSet * sizeof(char));
 
         strcpy(midStr, separator);
         sprintf(tmpNum, "%i", *(intset + i));
@@ -672,8 +671,8 @@ char *convertIntArrToCharArr(int *intset, int size) {
             strcat(finalResult, midStr);
         }
 
-        free(tmpNum);
-        free(midStr);
+        pfree(tmpNum);
+        pfree(midStr);
 
         digits = 0;
         memToSet = 0;
@@ -689,7 +688,7 @@ char *convertIntArrToCharArr(int *intset, int size) {
 
 char *addBraces(char *result, int accumSize) {
     int newSize = accumSize + 2;
-    char *newStr = malloc(newSize);
+    char *newStr = palloc(newSize);
     int i = 0;
     strcpy(newStr, "{");
     if (result != NULL) {
@@ -748,7 +747,6 @@ int countSpace(char *str) {
 
 char *removeBraces(char *str) {
     int size = strlen(str);
-    // TODO: use pmalloc instaad
     char *i = palloc((size - 1) * sizeof(char));
     initEmptyCharPtr(i, size - 1);
     char *j = str;
@@ -776,11 +774,11 @@ int *getUniqueItems(int *rawValue, int *size) {
     int newSize = 0;
     for (i = 0; i < *size; i++) {
         if (newSize == 0) {
-            tmpList = malloc(sizeof(int));
+            tmpList = palloc(sizeof(int));
             newSize++;
             tmpList[0] = *(rawValue + i);
         } else if (listIn(finalList, newSize, *(rawValue + i))) {
-            tmpList = realloc(finalList, (++newSize) * sizeof(int));
+            tmpList = repalloc(finalList, (++newSize) * sizeof(int));
             *(tmpList + newSize - 1) = *(rawValue + i);
         }
         finalList = tmpList;
