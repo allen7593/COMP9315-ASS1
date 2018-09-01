@@ -19,7 +19,7 @@ insert into mySets values (9, '{1,}');
 insert into mySets values (9,'{1,,5}');
 insert into mySets values (9,'{1,/}');
 insert into mySets values (9,'{1,/n}');
-insert into mySets values (9,'{1,2}'');
+insert into mySets values (9,'{1,2}');
 insert into mySets values (9,'[1,2]');
 insert into mySets values (9,'{1*5,2}');
 
