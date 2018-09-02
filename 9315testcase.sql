@@ -1,4 +1,4 @@
-delete from mysets;
+create table mySets (id integer primary key, iset intSet);
 
 /*#valid*/
 insert into mySets values (1, '{ }');
