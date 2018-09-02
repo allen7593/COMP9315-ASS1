@@ -142,8 +142,10 @@ intset_contain(PG_FUNCTION_ARGS) {
     IntSet *right_set = VARDATA(right);
     int *leftSet = convertIntSetArrToIntArr(left_set, &leftLen);
     int *rightSet = convertIntSetArrToIntArr(right_set, &rightLen);
+    int ab = contain(leftSet, leftLen, rightSet, rightLen);
+    int ba = contain(rightSet, rightLen, leftSet, leftLen);
 
-    PG_RETURN_BOOL(contain(leftSet, leftLen, rightSet, rightLen) == 1);
+    PG_RETURN_BOOL(ab == 1 && ba == 0);
 }
 
 PG_FUNCTION_INFO_V1(intset_union);
@@ -314,7 +316,7 @@ int intset_binary_search(int *list, int size, int target) {
         if (high - low == 0 && *(list + high) != target) {
             return 0; // Not Found
         } else if (high - low == 1) {
-            if(*(list + low) == target || *(list + high) == target) {
+            if (*(list + low) == target || *(list + high) == target) {
                 return 1;
             }
             return 0;
@@ -472,9 +474,6 @@ int belong(int i, int *iset, int iset_len) {  // belong(int, int_set, int_set_le
 
 int contain(int *isetA, int isetA_len, int *isetB, int isetB_len) { //isetB contains isetA = A @> B
     if (isetA_len == 0) {
-        if (isetB_len == 0) {
-            return 0;  //void set cannot contain void set
-        }
         return 1;  //any set contains void set
     }
     if (isetA_len > isetB_len) {
